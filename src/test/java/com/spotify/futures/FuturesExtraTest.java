@@ -128,4 +128,19 @@ public class FuturesExtraTest {
     assertEquals("a|abc|d", result2.get());
   }
 
+  @Test
+  public void testSimpleAsync() throws Exception {
+    ListenableFuture<String> a = Futures.immediateFuture("a");
+    ListenableFuture<String> b = Futures.immediateFuture("b");
+    ListenableFuture<String> c = Futures.immediateFuture("c");
+    ListenableFuture<String> result = FuturesExtra.transform(a, b, c, new FuturesExtra.AsyncFunction3<String, String, String, String>() {
+      @Override
+      public ListenableFuture<String> apply(String s, String s2, String s3) {
+        return Futures.immediateFuture(s + s2 + s3);
+      }
+    });
+    assertEquals("abc", result.get());
+  }
+
+
 }
