@@ -142,5 +142,17 @@ public class FuturesExtraTest {
     assertEquals("abc", result.get());
   }
 
+  @Test
+  public void testGenericBounds() throws Exception {
+    ListenableFuture<Integer> a = Futures.immediateFuture(17);
+    ListenableFuture<Integer> b = Futures.immediateFuture(42);
+    ListenableFuture<Integer> result = FuturesExtra.transform(a, b,  new FuturesExtra.Function2<Integer, Number, Number>() {
+      @Override
+      public Integer apply(Number s, Number s2) {
+        return s.intValue() + s2.intValue();
+      }
+    });
+    assertEquals(42+17, result.get().intValue());
+  }
 
 }

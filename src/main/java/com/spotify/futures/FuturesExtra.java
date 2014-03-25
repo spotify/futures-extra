@@ -9,9 +9,11 @@ import java.util.Arrays;
 import java.util.List;
 
 public class FuturesExtra {
-  public static <Z, A, B> ListenableFuture<Z> transform(ListenableFuture<A> a,
-                                                        ListenableFuture<B> b,
-                                                        final Function2<Z, A, B> function) {
+
+  public static <Z, A, B> ListenableFuture<Z> transform(
+          ListenableFuture<A> a,
+          ListenableFuture<B> b,
+          final Function2<Z, ? super A, ? super B> function) {
     return transform(Arrays.asList(a, b), new Function<List<Object>, Z>() {
       @Override
       public Z apply(List<Object> results) {
@@ -27,7 +29,7 @@ public class FuturesExtra {
   public static <Z, A, B> ListenableFuture<Z> transform(
           ListenableFuture<A> a,
           ListenableFuture<B> b,
-          final AsyncFunction2<Z, A, B> function) {
+          final AsyncFunction2<Z, ? super A, ? super B> function) {
     return transform(Arrays.asList(a, b), new AsyncFunction<List<Object>, Z>() {
       @Override
       public ListenableFuture<Z> apply(List<Object> results) {
@@ -44,7 +46,7 @@ public class FuturesExtra {
           ListenableFuture<A> a,
           ListenableFuture<B> b,
           ListenableFuture<C> c,
-          final Function3<Z, A, B, C> function) {
+          final Function3<Z, ? super A, ? super B, ? super C> function) {
     return transform(Arrays.asList(a, b, c), new Function<List<Object>, Z>() {
       @Override
       public Z apply(List<Object> results) {
@@ -61,7 +63,7 @@ public class FuturesExtra {
           ListenableFuture<A> a,
           ListenableFuture<B> b,
           ListenableFuture<C> c,
-          final AsyncFunction3<Z, A, B, C> function) {
+          final AsyncFunction3<Z, ? super A, ? super B, ? super C> function) {
     return transform(Arrays.asList(a, b, c), new AsyncFunction<List<Object>, Z>() {
       @Override
       public ListenableFuture<Z> apply(List<Object> results) {
@@ -79,7 +81,7 @@ public class FuturesExtra {
           ListenableFuture<B> b,
           ListenableFuture<C> c,
           ListenableFuture<D> d,
-          final Function4<Z, A, B, C, D> function) {
+          final Function4<Z, ? super A, ? super B, ? super C, ? super D> function) {
     return transform(Arrays.asList(a, b, c, d), new Function<List<Object>, Z>() {
       @Override
       public Z apply(List<Object> results) {
@@ -97,7 +99,7 @@ public class FuturesExtra {
           ListenableFuture<B> b,
           ListenableFuture<C> c,
           ListenableFuture<D> d,
-          final AsyncFunction4<Z, A, B, C, D> function) {
+          final AsyncFunction4<Z, ? super A, ? super B, ? super C, ? super D> function) {
     return transform(Arrays.asList(a, b, c, d), new AsyncFunction<List<Object>, Z>() {
       @Override
       public ListenableFuture<Z> apply(List<Object> results) {
@@ -116,7 +118,7 @@ public class FuturesExtra {
           ListenableFuture<C> c,
           ListenableFuture<D> d,
           ListenableFuture<E> e,
-          final Function5<Z, A, B, C, D, E> function) {
+          final Function5<Z, ? super A, ? super B, ? super C, ? super D, ? super E> function) {
     return transform(Arrays.asList(a, b, c, d, e), new Function<List<Object>, Z>() {
       @Override
       public Z apply(List<Object> results) {
@@ -135,7 +137,7 @@ public class FuturesExtra {
           ListenableFuture<C> c,
           ListenableFuture<D> d,
           ListenableFuture<E> e,
-          final AsyncFunction5<Z, A, B, C, D, E> function) {
+          final AsyncFunction5<Z, ? super A, ? super B, ? super C, ? super D, ? super E> function) {
     return transform(Arrays.asList(a, b, c, d, e), new AsyncFunction<List<Object>, Z>() {
       @Override
       public ListenableFuture<Z> apply(List<Object> results) {
