@@ -2,13 +2,55 @@ package com.spotify.futures;
 
 import com.google.common.base.Function;
 import com.google.common.util.concurrent.AsyncFunction;
+import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.SettableFuture;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static java.util.Objects.requireNonNull;
 
 public class FuturesExtra {
+
+  /**
+   * @return a new {@link com.google.common.util.concurrent.ListenableFuture} whose result is
+   * that of the first successful of {@param futures} to return or the exception of the last failing future,
+   * or a failed future {@code #IllegalArgumentException} if {@param futures} is empty
+   *
+   * @throws {@code #java.lang.NullPointerException} if the {@param futures} is null
+   */
+  public static <T> ListenableFuture<T> select(final List<ListenableFuture<T>> futures) {
+    requireNonNull(futures);
+    if (futures.isEmpty()) {
+      return Futures.immediateFailedFuture(new NoSuchElementException("List is empty"));
+    }
+    final int count = futures.size();
+    final AtomicInteger failures = new AtomicInteger();
+
+    final SettableFuture<T> promise = SettableFuture.create();
+    final FutureCallback<T> cb = new FutureCallback<T>() {
+      @Override
+      public void onSuccess(final T result) {
+        promise.set(result);
+      }
+
+      @Override
+      public void onFailure(Throwable t) {
+        if (failures.incrementAndGet() == count) {
+          promise.setException(t);
+        }
+      }
+    };
+
+    for (final ListenableFuture<T> future: futures) {
+      Futures.addCallback(future, cb);
+    }
+    return promise;
+  }
 
   public static <Z, A, B> ListenableFuture<Z> transform(
           ListenableFuture<A> a,

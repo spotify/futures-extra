@@ -1,13 +1,17 @@
 package com.spotify.futures;
 
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class FuturesExtraTest {
@@ -153,6 +157,52 @@ public class FuturesExtraTest {
       }
     });
     assertEquals(42+17, result.get().intValue());
+  }
+  public void testSuccessfulSelect() throws Exception {
+    final SettableFuture<String> f1 = SettableFuture.create();
+    final SettableFuture<String> f2 = SettableFuture.create();
+    final SettableFuture<String> f3 = SettableFuture.create();
+    f1.set("value");
+
+    final ListenableFuture<String> zealous = FuturesExtra.select(Lists.<ListenableFuture<String>>newArrayList(f1, f2, f3));
+    assertTrue(zealous.get().equals("value"));
+  }
+
+  @Test(expected = ExecutionException.class)
+  public void testAllFailedSelect() throws Exception {
+    final SettableFuture<String> f1 = SettableFuture.create();
+    final SettableFuture<String> f2 = SettableFuture.create();
+    final SettableFuture<String> f3 = SettableFuture.create();
+    f1.setException(new Exception());
+    f2.setException(new Exception());
+    f3.setException(new Exception());
+
+    final ListenableFuture<String> zealous = FuturesExtra.select(Arrays.<ListenableFuture<String>>asList(f1, f2, f3));
+    zealous.get(); // will throw Exception
+  }
+
+  @Test()
+  public void testOneSuccessfulSelect() throws Exception {
+    final SettableFuture<String> f1 = SettableFuture.create();
+    final SettableFuture<String> f2 = SettableFuture.create();
+    final SettableFuture<String> f3 = SettableFuture.create();
+    f1.setException(new Exception());
+    f2.set("value");
+    f3.setException(new Exception());
+    final ListenableFuture<String> zealous = FuturesExtra.select(Arrays.<ListenableFuture<String>>asList(f1, f2, f3));
+    assertTrue(zealous.get().equals("value"));
+  }
+
+  @Test(expected = ExecutionException.class)
+  public void testSelectWithEmptyList() throws ExecutionException, InterruptedException {
+    final ListenableFuture<String> f = FuturesExtra.select(Collections.<ListenableFuture<String>>emptyList());
+    f.get(); // will throw Exception
+  }
+
+  @Test(expected = NullPointerException.class)
+  public void testSelectWithNullList() throws ExecutionException, InterruptedException {
+    final ListenableFuture<String> f = FuturesExtra.select(null);
+    f.get(); // will throw Exception
   }
 
 }
