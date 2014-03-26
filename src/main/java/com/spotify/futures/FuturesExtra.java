@@ -10,11 +10,55 @@ import com.google.common.util.concurrent.SettableFuture;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.Objects.requireNonNull;
 
 public class FuturesExtra {
+
+  /**
+   * Returns a future that fails with a timeout exception if the parent future has not
+   * finished before the timeout. If a timeout occurs, the future will throw a TimeoutException.
+   * The new returned future will always be executed on the provided scheduledExecutorService,
+   * even when the parent future does not timeout.
+   *
+   * @param scheduledExecutorService executor that runs the timeout code. If the future times out,
+   *                                 this is also the thread any callbacks will run on.
+   * @param future                   the future to wrap as a timeout future.
+   * @param timeout                  how long to wait before timing out a future
+   * @param unit                     unit of the timeout
+   * @return a future that may timeout before the parent future is done.
+   */
+  public static <T> ListenableFuture<T> makeTimeoutFuture(
+          ScheduledExecutorService scheduledExecutorService,
+          ListenableFuture<T> future,
+          final long timeout, final TimeUnit unit) {
+    final SettableFuture<T> promise = SettableFuture.create();
+
+    scheduledExecutorService.schedule(new Runnable() {
+      @Override
+      public void run() {
+        promise.setException(new TimeoutException("Future timed out after " + timeout + " " + unit.name()));
+      }
+    }, timeout, unit);
+
+    Futures.addCallback(future, new FutureCallback<T>() {
+      @Override
+      public void onSuccess(T result) {
+        promise.set(result);
+      }
+
+      @Override
+      public void onFailure(Throwable t) {
+        promise.setException(t);
+      }
+    }, scheduledExecutorService);
+
+    return promise;
+  }
 
   /**
    * @return a new {@link com.google.common.util.concurrent.ListenableFuture} whose result is
