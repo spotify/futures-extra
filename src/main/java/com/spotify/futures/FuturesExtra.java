@@ -243,4 +243,32 @@ public class FuturesExtra {
   private static <Z> ListenableFuture<Z> transform(final List<ListenableFuture<?>> inputs, final AsyncFunction<List<Object>, Z> function) {
     return Futures.transform(Futures.allAsList(inputs), function);
   }
+
+  /**
+   * <p>Transform a list of futures to a future that returns a joined result of them all.
+   * The result can be used to get the joined results and ensures no future that were not part of the join is accessed.</p>
+   * @see #join(ListenableFuture...)
+   */
+  public static ListenableFuture<JoinedResults> join(List<ListenableFuture<?>> inputs) {
+    return Futures.transform(Futures.allAsList(inputs), new JoinedResults.Transform(inputs));
+  }
+
+  /**
+   * <p>Transform a list of futures to a future that returns a joined result of them all.
+   * The result can be used to get the joined results and ensures no future that were not part of the join is accessed.</p>
+   * <p>Example</p>
+   * <pre>
+   * {@code
+   * final Future<String> first = Futures.immediateFuture("ok");
+   * final Future<Integer> second = Futures.immediateFuture(1);
+   * JoinedResults futures = FuturesExtra.join(first, second).get();
+   * assertEquals("ok", futures.get(first));
+   * assertEquals(1, futures.get(second));
+   * }
+   * </pre>
+   */
+  public static ListenableFuture<JoinedResults> join(ListenableFuture<?>... inputs) {
+    List<ListenableFuture<?>> list = Arrays.asList(inputs);
+    return Futures.transform(Futures.allAsList(list), new JoinedResults.Transform(list));
+  }
 }
