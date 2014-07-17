@@ -244,7 +244,7 @@ public class FuturesExtra {
       ListenableFuture<E> e,
       ListenableFuture<F> f,
       final Function6<Z, ? super A, ? super B, ? super C, ? super D, ? super E, ? super F> function) {
-    return transform(Arrays.asList(a, b, c, d, e), new Function<List<Object>, Z>() {
+    return transform(Arrays.asList(a, b, c, d, e, f), new Function<List<Object>, Z>() {
       @Override
       public Z apply(List<Object> results) {
         return function.apply((A) results.get(0), (B) results.get(1), (C) results.get(2), (D) results.get(3), (E) results.get(4), (F) results.get(5));
