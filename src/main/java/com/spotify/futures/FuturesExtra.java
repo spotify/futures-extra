@@ -236,6 +236,46 @@ public class FuturesExtra {
     ListenableFuture<Z> apply(A a, B b, C c, D d, E e);
   }
 
+  public static <Z, A, B, C, D, E, F> ListenableFuture<Z> transform(
+      ListenableFuture<A> a,
+      ListenableFuture<B> b,
+      ListenableFuture<C> c,
+      ListenableFuture<D> d,
+      ListenableFuture<E> e,
+      ListenableFuture<F> f,
+      final Function6<Z, ? super A, ? super B, ? super C, ? super D, ? super E, ? super F> function) {
+    return transform(Arrays.asList(a, b, c, d, e), new Function<List<Object>, Z>() {
+      @Override
+      public Z apply(List<Object> results) {
+        return function.apply((A) results.get(0), (B) results.get(1), (C) results.get(2), (D) results.get(3), (E) results.get(4), (F) results.get(5));
+      }
+    });
+  }
+
+  public static interface Function6<Z, A, B, C, D, E, F> {
+    Z apply(A a, B b, C c, D d, E e, F f);
+  }
+
+  public static <Z, A, B, C, D, E, F> ListenableFuture<Z> transform(
+      ListenableFuture<A> a,
+      ListenableFuture<B> b,
+      ListenableFuture<C> c,
+      ListenableFuture<D> d,
+      ListenableFuture<E> e,
+      ListenableFuture<F> f,
+      final AsyncFunction6<Z, ? super A, ? super B, ? super C, ? super D, ? super E, ? super F> function) {
+    return transform(Arrays.asList(a, b, c, d, e, f), new AsyncFunction<List<Object>, Z>() {
+      @Override
+      public ListenableFuture<Z> apply(List<Object> results) {
+        return function.apply((A) results.get(0), (B) results.get(1), (C) results.get(2), (D) results.get(3), (E) results.get(4), (F) results.get(5));
+      }
+    });
+  }
+
+  public static interface AsyncFunction6<Z, A, B, C, D, E, F> {
+    ListenableFuture<Z> apply(A a, B b, C c, D d, E e, F f);
+  }
+
   private static <Z> ListenableFuture<Z> transform(final List<ListenableFuture<?>> inputs, final Function<List<Object>, Z> function) {
     return Futures.transform(Futures.allAsList(inputs), function);
   }
