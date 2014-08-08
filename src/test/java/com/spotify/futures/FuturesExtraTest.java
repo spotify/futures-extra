@@ -10,7 +10,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 
+import static com.google.common.util.concurrent.Uninterruptibles.getUninterruptibly;
+import static com.spotify.futures.FuturesExtra.fastFail;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -205,4 +208,43 @@ public class FuturesExtraTest {
     f.get(); // will throw Exception
   }
 
+  @Test
+  public void testFastFail() throws Exception {
+    SettableFuture<Integer> condition = SettableFuture.create();
+    SettableFuture<String> value = SettableFuture.create(); // will not be set
+
+    ListenableFuture<String> result = fastFail(condition, value, new Min7());
+
+    condition.set(3);
+    try {
+      getUninterruptibly(result);
+      fail();
+    } catch (Exception e) {
+      assertEquals("value too low", e.getCause().getMessage());
+    }
+  }
+
+  @Test
+  public void testFastFailSuccess() throws Exception {
+    SettableFuture<Integer> condition = SettableFuture.create();
+    SettableFuture<String> value = SettableFuture.create();
+
+    ListenableFuture<String> result = fastFail(condition, value, new Min7());
+
+    condition.set(7);
+    assertFalse(result.isDone());
+
+    value.set("done now");
+    String s = getUninterruptibly(result);
+    assertEquals("done now", s);
+  }
+
+  static class Min7 implements Validator<Integer> {
+    @Override
+    public void validate(Integer value) throws Exception {
+      if (value < 7) {
+        throw new RuntimeException("value too low");
+      }
+    }
+  }
 }

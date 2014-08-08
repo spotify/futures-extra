@@ -61,7 +61,47 @@ public class FuturesExtra {
   }
 
   /**
-   * @return a new {@link com.google.common.util.concurrent.ListenableFuture} whose result is
+   * This takes two futures of type {@link A} and {@link B} and works like
+   * a valve on {@link A}, with validation executed on {@link B}.
+   *
+   * Returns a future with the result of {@link A} that will wait for a
+   * condition on {@link B} to be validated first. Both futures can run in
+   * parallel. If the condition fails validation, the {@link A} future will
+   * be cacelled by a call to {@link ListenableFuture#cancel(boolean)} with
+   * {@code false}.
+   *
+   * This is useful for when you want to optimistically run a time consuming
+   * path while validating if it should be computed or not by a parallel
+   * async computation.
+   *
+   * @param conditionValue  The future computing the value for validation.
+   * @param future          The actual value future.
+   * @param validator       A validator for the condition.
+   *
+   * @return a new {@link ListenableFuture} eventually either containing
+   * {@param future} or any exception trown by {@param validator}.
+   */
+  public static <A, B> ListenableFuture<A> fastFail(
+          final ListenableFuture<B> conditionValue,
+          final ListenableFuture<A> future,
+          final Validator<B> validator) {
+    return Futures.transform(conditionValue, new AsyncFunction<B, A>() {
+      @Override
+      public ListenableFuture<A> apply(B value) throws Exception {
+        try {
+          validator.validate(value);
+          return future;
+
+        } catch (Exception e) {
+          future.cancel(false);
+          throw e;
+        }
+      }
+    });
+  }
+
+  /**
+   * @return a new {@link ListenableFuture} whose result is
    * that of the first successful of {@param futures} to return or the exception of the last failing future,
    * or a failed future {@code #IllegalArgumentException} if {@param futures} is empty
    *
