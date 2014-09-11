@@ -4,7 +4,9 @@
 
 package com.spotify.futures;
 
+import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
+import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import org.junit.Before;
@@ -16,6 +18,7 @@ import org.mockito.stubbing.Answer;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.google.common.util.concurrent.Futures.immediateFailedFuture;
 import static com.google.common.util.concurrent.Futures.immediateFuture;
@@ -50,8 +53,9 @@ public class AsyncRetrierTest {
     ListenableFuture<String> f1 = immediateFailedFuture(new RuntimeException("e1"));
     ListenableFuture<String> f2 = immediateFailedFuture(new RuntimeException("e2"));
     ListenableFuture<String> f3 = immediateFuture("success");
+    ListenableFuture<String> f4 = immediateFuture("success!!!");
 
-    when(fun.get()).thenReturn(f1, f2, f3);
+    when(fun.get()).thenReturn(f1, f2, f3, f4);
 
     when(executorService.schedule(any(Runnable.class), anyLong(), any(TimeUnit.class)))
         .then(new Answer<Object>() {
@@ -117,5 +121,33 @@ public class AsyncRetrierTest {
     } catch (Exception e) {
       assertEquals("e2", e.getCause().getMessage());
     }
+  }
+
+  @Test
+  public void testRetryFailureOnCustomPredicate() throws Exception {
+    ListenableFuture<String> retry = retrier.retry(fun, 2, 0, SECONDS, successPredicate());
+
+    try {
+      getUninterruptibly(retry);
+      fail();
+    } catch (Exception e) {
+      assertEquals("Failed retry condition", e.getCause().getMessage());
+    }
+  }
+
+  @Test
+  public void testRetrySuccessOnCustomPredicate() throws Exception {
+    ListenableFuture<String> retry = retrier.retry(fun, 3, 0, SECONDS, successPredicate());
+
+    assertEquals("success!!!", getUninterruptibly(retry));
+  }
+
+  private Predicate<String> successPredicate() {
+    return new Predicate<String>() {
+      @Override
+      public boolean apply(String input) {
+        return input.equals("success!!!");
+      }
+    };
   }
 }

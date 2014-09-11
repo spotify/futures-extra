@@ -4,18 +4,17 @@
 
 package com.spotify.futures;
 
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.base.Supplier;
-import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.FutureFallback;
+import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.SettableFuture;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static com.google.common.util.concurrent.Futures.addCallback;
-import static com.google.common.util.concurrent.Futures.immediateFailedFuture;
-import static com.google.common.util.concurrent.Futures.withFallback;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
@@ -42,72 +41,85 @@ public final class AsyncRetrier {
   public <T> ListenableFuture<T> retry(final Supplier<ListenableFuture<T>> code,
                                        final int retries) {
 
-    return retry(code, retries, DEFAULT_DELAY_MILLIS, MILLISECONDS);
+    return retry(code, retries, DEFAULT_DELAY_MILLIS, MILLISECONDS, Predicates.<T>alwaysTrue());
   }
 
   public <T> ListenableFuture<T> retry(final Supplier<ListenableFuture<T>> code,
                                        final int retries,
                                        final long delayMillis) {
 
-    return retry(code, retries, delayMillis, MILLISECONDS);
+    return retry(code, retries, delayMillis, MILLISECONDS, Predicates.<T>alwaysTrue());
   }
 
   public <T> ListenableFuture<T> retry(final Supplier<ListenableFuture<T>> code,
                                        final int retries,
                                        final long delay,
                                        final TimeUnit timeUnit) {
+    return retry(code, retries, delay, timeUnit, Predicates.<T>alwaysTrue());
+  }
 
-    return withFallback(code.get(), new FutureFallback<T>() {
+  public <T> ListenableFuture<T> retry(final Supplier<ListenableFuture<T>> code,
+                                       final int retries,
+                                       final long delay,
+                                       final TimeUnit timeUnit,
+                                       final Predicate<T> retryCondition) {
+
+    SettableFuture<T> future = SettableFuture.create();
+    startRetry(future, code, retries, delay, timeUnit, retryCondition);
+    return future;
+  }
+
+  private <T> void startRetry(final SettableFuture<T> future,
+                              final Supplier<ListenableFuture<T>> code,
+                              final int retries,
+                              final long delay,
+                              final TimeUnit timeUnit,
+                              final Predicate<T> retryCondition) {
+
+    ListenableFuture<T> codeFuture;
+    try {
+      codeFuture = code.get();
+    } catch (Exception e) {
+      handleFailure(future, code, retries, delay, timeUnit, retryCondition, e);
+      return;
+    }
+
+    Futures.addCallback(codeFuture, new FutureCallback<T>() {
       @Override
-      public ListenableFuture<T> create(Throwable t) throws Exception {
-        if (retries > 0) {
-          if (delay > 0) {
-            return delay(new Supplier<ListenableFuture<T>>() {
-              @Override
-              public ListenableFuture<T> get() {
-                return retry(code, retries - 1, delay, timeUnit);
-              }
-            }, delay, timeUnit);
-          } else {
-            return retry(code, retries - 1, delay, timeUnit);
-          }
+      public void onSuccess(T result) {
+        if (retryCondition.apply(result)) {
+          future.set(result);
         } else {
-          return immediateFailedFuture(t);
+          handleFailure(future, code, retries, delay, timeUnit, retryCondition, new RuntimeException("Failed retry condition"));
         }
+      }
+
+      @Override
+      public void onFailure(Throwable t) {
+        handleFailure(future, code, retries, delay, timeUnit, retryCondition, t);
       }
     });
   }
 
-  private <T> ListenableFuture<T> delay(final Supplier<ListenableFuture<T>> code,
-                                        final long delay,
-                                        final TimeUnit timeUnit) {
-
-    final CallbackFuture<T> future = new CallbackFuture<T>();
-
-    executorService.schedule(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          addCallback(code.get(), future);
-        } catch (Exception e) {
-          future.onFailure(e);
-        }
+  private <T> void handleFailure(final SettableFuture<T> future,
+                                 final Supplier<ListenableFuture<T>> code,
+                                 final int retries,
+                                 final long delay, final TimeUnit timeUnit,
+                                 final Predicate<T> retryCondition,
+                                 Throwable t) {
+    if (retries > 0) {
+      if (delay > 0) {
+        executorService.schedule(new Runnable() {
+          @Override
+          public void run() {
+            startRetry(future, code, retries - 1, delay, timeUnit, retryCondition);
+          }
+        }, delay, timeUnit);
+      } else {
+        startRetry(future, code, retries - 1, delay, timeUnit, retryCondition);
       }
-    }, delay, timeUnit);
-
-    return future;
-  }
-
-  private static class CallbackFuture<T> extends AbstractFuture<T> implements FutureCallback<T> {
-    @Override
-    public void onSuccess(T result) {
-      set(result);
-    }
-
-    @Override
-    public void onFailure(Throwable t) {
-      setException(t);
+    } else {
+      future.setException(t);
     }
   }
-
 }
