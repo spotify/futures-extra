@@ -6,7 +6,6 @@ package com.spotify.futures;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
-import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import org.junit.Before;
@@ -18,7 +17,6 @@ import org.mockito.stubbing.Answer;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.google.common.util.concurrent.Futures.immediateFailedFuture;
 import static com.google.common.util.concurrent.Futures.immediateFuture;

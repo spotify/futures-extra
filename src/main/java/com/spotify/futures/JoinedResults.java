@@ -57,6 +57,6 @@ public final class JoinedResults {
   }
 
   private static enum Null {
-    INSTANCE;
+    INSTANCE
   }
 }

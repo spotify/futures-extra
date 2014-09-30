@@ -23,7 +23,7 @@ public class FuturesExtraTest {
     ListenableFuture<String> a = Futures.immediateFuture("a");
     ListenableFuture<String> b = Futures.immediateFuture("b");
     ListenableFuture<String> c = Futures.immediateFuture("c");
-    ListenableFuture<String> result = FuturesExtra.transform(a, b, c, new FuturesExtra.Function3<String, String, String, String>() {
+    ListenableFuture<String> result = FuturesExtra.syncTransform3(a, b, c, new FuturesExtra.Function3<String, String, String, String>() {
       @Override
       public String apply(String s, String s2, String s3) {
         return s + s2 + s3;
@@ -37,7 +37,7 @@ public class FuturesExtraTest {
     ListenableFuture<String> a = Futures.immediateFuture("a");
     ListenableFuture<String> b = Futures.immediateFuture("b");
     ListenableFuture<String> c = Futures.immediateFuture("c");
-    ListenableFuture<String> result = FuturesExtra.transform(a, b, c, new FuturesExtra.Function3<String, String, String, String>() {
+    ListenableFuture<String> result = FuturesExtra.syncTransform3(a, b, c, new FuturesExtra.Function3<String, String, String, String>() {
       @Override
       public String apply(String s, String s2, String s3) {
         return s + s2 + s3;
@@ -45,7 +45,7 @@ public class FuturesExtraTest {
     });
 
     ListenableFuture<String> d = Futures.immediateFuture("d");
-    ListenableFuture<String> result2 = FuturesExtra.transform(a, result, d, new FuturesExtra.Function3<String, String, String, String>() {
+    ListenableFuture<String> result2 = FuturesExtra.syncTransform3(a, result, d, new FuturesExtra.Function3<String, String, String, String>() {
       @Override
       public String apply(String s, String s2, String s3) {
         return s + "|" + s2 + "|" + s3;
@@ -59,7 +59,7 @@ public class FuturesExtraTest {
     ListenableFuture<String> a = Futures.immediateFuture("a");
     ListenableFuture<String> b = Futures.immediateFuture("b");
     ListenableFuture<String> c = Futures.immediateFailedFuture(new IllegalArgumentException("my error message"));
-    ListenableFuture<String> result = FuturesExtra.transform(a, b, c, new FuturesExtra.Function3<String, String, String, String>() {
+    ListenableFuture<String> result = FuturesExtra.syncTransform3(a, b, c, new FuturesExtra.Function3<String, String, String, String>() {
       @Override
       public String apply(String s, String s2, String s3) {
         return s + s2 + s3;
@@ -79,7 +79,7 @@ public class FuturesExtraTest {
     ListenableFuture<String> a = Futures.immediateFuture("a");
     ListenableFuture<String> b = Futures.immediateFailedFuture(new IllegalArgumentException("first error"));
     ListenableFuture<String> c = Futures.immediateFailedFuture(new IllegalArgumentException("second error"));
-    ListenableFuture<String> result = FuturesExtra.transform(a, b, c, new FuturesExtra.Function3<String, String, String, String>() {
+    ListenableFuture<String> result = FuturesExtra.syncTransform3(a, b, c, new FuturesExtra.Function3<String, String, String, String>() {
       @Override
       public String apply(String s, String s2, String s3) {
         return s + s2 + s3;
@@ -99,7 +99,7 @@ public class FuturesExtraTest {
     SettableFuture<String> a = SettableFuture.create();
     ListenableFuture<String> b = Futures.immediateFuture("b");
     ListenableFuture<String> c = Futures.immediateFuture("c");
-    ListenableFuture<String> result = FuturesExtra.transform(a, b, c, new FuturesExtra.Function3<String, String, String, String>() {
+    ListenableFuture<String> result = FuturesExtra.syncTransform3(a, b, c, new FuturesExtra.Function3<String, String, String, String>() {
       @Override
       public String apply(String s, String s2, String s3) {
         return s + s2 + s3;
@@ -115,7 +115,7 @@ public class FuturesExtraTest {
     SettableFuture<String> a = SettableFuture.create();
     ListenableFuture<String> b = Futures.immediateFuture("b");
     ListenableFuture<String> c = Futures.immediateFuture("c");
-    ListenableFuture<String> result = FuturesExtra.transform(a, b, c, new FuturesExtra.Function3<String, String, String, String>() {
+    ListenableFuture<String> result = FuturesExtra.syncTransform3(a, b, c, new FuturesExtra.Function3<String, String, String, String>() {
       @Override
       public String apply(String s, String s2, String s3) {
         return s + s2 + s3;
@@ -123,7 +123,7 @@ public class FuturesExtraTest {
     });
 
     ListenableFuture<String> d = Futures.immediateFuture("d");
-    ListenableFuture<String> result2 = FuturesExtra.transform(a, result, d, new FuturesExtra.Function3<String, String, String, String>() {
+    ListenableFuture<String> result2 = FuturesExtra.syncTransform3(a, result, d, new FuturesExtra.Function3<String, String, String, String>() {
       @Override
       public String apply(String s, String s2, String s3) {
         return s + "|" + s2 + "|" + s3;
@@ -140,7 +140,7 @@ public class FuturesExtraTest {
     ListenableFuture<String> a = Futures.immediateFuture("a");
     ListenableFuture<String> b = Futures.immediateFuture("b");
     ListenableFuture<String> c = Futures.immediateFuture("c");
-    ListenableFuture<String> result = FuturesExtra.transform(a, b, c, new FuturesExtra.AsyncFunction3<String, String, String, String>() {
+    ListenableFuture<String> result = FuturesExtra.asyncTransform3(a, b, c, new FuturesExtra.AsyncFunction3<String, String, String, String>() {
       @Override
       public ListenableFuture<String> apply(String s, String s2, String s3) {
         return Futures.immediateFuture(s + s2 + s3);
@@ -153,7 +153,7 @@ public class FuturesExtraTest {
   public void testGenericBounds() throws Exception {
     ListenableFuture<Integer> a = Futures.immediateFuture(17);
     ListenableFuture<Integer> b = Futures.immediateFuture(42);
-    ListenableFuture<Integer> result = FuturesExtra.transform(a, b,  new FuturesExtra.Function2<Integer, Number, Number>() {
+    ListenableFuture<Integer> result = FuturesExtra.syncTransform2(a, b,  new FuturesExtra.Function2<Integer, Number, Number>() {
       @Override
       public Integer apply(Number s, Number s2) {
         return s.intValue() + s2.intValue();
