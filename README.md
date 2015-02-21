@@ -28,6 +28,36 @@ To import it with maven, use this:
 
 ### Examples
 
+#### Cleaner transforms for Java 8.
+Java 8 introduced lambdas which can greatly reduce verbosity in code, which is great when using futures and transforms.
+
+Ideally you would want to do something like this:
+```java
+public static <A, B> ListenableFuture<B> example(ListenableFuture<A> future) {
+  return Futures.transform(future, a -> toB(a));
+}
+```
+
+This doesn't actually work though, because Futures.transform has two variants: one that takes a Function and one that takes an AsyncFunction.
+Hence the compiler can't determine which variant to use without additional type information.
+
+To work around that you have to cast it like this:
+```java
+public static <A, B> ListenableFuture<B> example(ListenableFuture<A> future) {
+  return Futures.transform(future, (Function<A, B>) a -> toB(a));
+}
+```
+
+With futures-extra you can do this instead:
+```java
+public static <A, B> ListenableFuture<B> example(ListenableFuture<A> future) {
+  return FuturesExtra.syncTransform(future, a -> toB(a));
+}
+```
+
+This is just a simple delegating method that explicitly calls Futures.transform(future, Function).
+There is also a corresponding FuturesExtra.asyncTransform that calls Futures.transform(future, AsyncFunction).
+
 #### Joining multiple futures
 
 A common use case is waiting for two or more futures and then transforming the
