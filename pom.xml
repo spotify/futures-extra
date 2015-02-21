@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.spotify</groupId>
   <version>1.4.1-SNAPSHOT</version>
@@ -12,6 +11,27 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
+
+  <profiles>
+    <profile>
+      <id>jdk7</id>
+      <activation>
+        <jdk>[1.6,1.7)</jdk>
+      </activation>
+      <properties>
+        <javadocparam />
+      </properties>
+    </profile>
+    <profile>
+      <id>jdk8</id>
+      <activation>
+        <jdk>1.8</jdk>
+      </activation>
+      <properties>
+        <javadocparam>-Xdoclint:none</javadocparam>
+      </properties>
+    </profile>
+  </profiles>
 
   <parent>
     <groupId>org.sonatype.oss</groupId>
@@ -135,14 +155,13 @@
           </execution>
         </executions>
       </plugin>
-      <!-- disable javadoc until we figure out how to make it run on both java 8 and java 7 -->
-      <!--plugin>
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>2.8.1</version>
         <configuration>
           <show>private</show>
-          <additionalparam>-Xdoclint:none</additionalparam>
+          <additionalparam>${javadocparam}</additionalparam>
         </configuration>
         <executions>
           <execution>
@@ -152,7 +171,7 @@
             </goals>
           </execution>
         </executions>
-      </plugin-->
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
