@@ -17,13 +17,11 @@ package com.spotify.futures;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
-import org.junit.After;
+import org.jmock.lib.concurrent.DeterministicScheduler;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -32,31 +30,30 @@ import static org.junit.Assert.fail;
 
 public class TimeoutFutureTest {
 
-  private ScheduledExecutorService threadpool;
+  private DeterministicScheduler scheduler;
 
   @Before
   public void setUp() throws Exception {
-    threadpool = Executors.newScheduledThreadPool(1);
-  }
-
-  @After
-  public void tearDown() throws Exception {
-    threadpool.shutdown();
+    scheduler = new DeterministicScheduler();
   }
 
   @Test
   public void testSuccess() throws Exception {
     SettableFuture<String> future = SettableFuture.create();
-    ListenableFuture<String> timeoutFuture = FuturesExtra.makeTimeoutFuture(threadpool, future, 10, TimeUnit.MILLISECONDS);
+    ListenableFuture<String> timeoutFuture = FuturesExtra.makeTimeoutFuture(scheduler, future, 10, TimeUnit.MILLISECONDS);
+    scheduler.tick(3, TimeUnit.MILLISECONDS);
     future.set("value");
+    scheduler.tick(3, TimeUnit.MILLISECONDS);
     assertEquals("value", timeoutFuture.get());
   }
 
   @Test
   public void testException() throws Exception {
     SettableFuture<String> future = SettableFuture.create();
-    ListenableFuture<String> timeoutFuture = FuturesExtra.makeTimeoutFuture(threadpool, future, 1000, TimeUnit.MILLISECONDS);
+    ListenableFuture<String> timeoutFuture = FuturesExtra.makeTimeoutFuture(scheduler, future, 1000, TimeUnit.MILLISECONDS);
+    scheduler.tick(3, TimeUnit.MILLISECONDS);
     future.setException(new IllegalArgumentException());
+    scheduler.tick(3, TimeUnit.MILLISECONDS);
     try {
       timeoutFuture.get();
       fail();
@@ -70,7 +67,10 @@ public class TimeoutFutureTest {
   @Test
   public void testTimeout() throws Exception {
     SettableFuture<String> future = SettableFuture.create();
-    ListenableFuture<String> timeoutFuture = FuturesExtra.makeTimeoutFuture(threadpool, future, 10, TimeUnit.MILLISECONDS);
+    ListenableFuture<String> timeoutFuture = FuturesExtra.makeTimeoutFuture(scheduler, future, 10, TimeUnit.MILLISECONDS);
+    scheduler.tick(100, TimeUnit.MILLISECONDS);
+    future.set("Success too late");
+    scheduler.tick(100, TimeUnit.MILLISECONDS);
     try {
       timeoutFuture.get();
       fail();
