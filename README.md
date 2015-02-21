@@ -2,9 +2,30 @@
 
 Futures-extra is a set of small utility functions to simplify working with Guava's ListenableFuture class
 
+### Build status
+
+[![Travis](https://api.travis-ci.org/spotify/futures-extra.svg?branch=master)](https://travis-ci.org/spotify/futures-extra)
+[![Coverage Status](http://img.shields.io/coveralls/spotify/futures-extra/master.svg)](https://coveralls.io/r/spotify/futures-extra?branch=master)
+
+### Maven central
+
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.spotify/futures-extra/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.spotify/futures-extra)
+
 ### Build dependencies
 * Java 6 or higher
 * Maven
+
+### Usage
+
+Futures-extra is meant to be used as a library embedded in other software.
+
+To import it with maven, use this:
+
+    <dependency>
+      <groupId>com.spotify</groupId>
+      <artifactId>futures-extra</artifactId>
+      <version>1.4.1</version>
+    </dependency>
 
 ### Examples
 
