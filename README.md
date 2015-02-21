@@ -18,7 +18,6 @@ Futures-extra is a set of small utility functions to simplify working with Guava
 ### Usage
 
 Futures-extra is meant to be used as a library embedded in other software.
-
 To import it with maven, use this:
 
     <dependency>
