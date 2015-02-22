@@ -45,11 +45,11 @@ public static <A, B> ListenableFuture<B> example(ListenableFuture<A> future) {
 ```
 
 Unfortunately this doesn't actually work because Futures.transform has
-two variants: one that takes a Function as it's second parameter and one that
+two variants: one that takes a Function as its second parameter and one that
 takes an AsyncFunction. The compiler can't determine which variant to use
 without additional type information.
 
-You could work around that you have to cast it like this:
+You could work around that by casting it like this:
 ```java
 public static <A, B> ListenableFuture<B> example(ListenableFuture<A> future) {
   return Futures.transform(future, (Function<A, B>) a -> toB(a));
@@ -107,7 +107,7 @@ To simplify these use cases we have a couple of helper functions:
 final ListenableFuture<A> futureA = getFutureA();
 final ListenableFuture<B> futureB = getFutureB();
 
-ListenableFuture<C> FuturesExtra.syncTransform2(futureA, futureB,
+ListenableFuture<C> ret = FuturesExtra.syncTransform2(futureA, futureB,
     (a, b) -> combine(a, b));
 ```
 
