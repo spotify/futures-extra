@@ -31,21 +31,25 @@ To import it with maven, use this:
 
 #### Cleaner transforms for Java 8.
 Java 8 introduced lambdas which can greatly reduce verbosity in code, which is
-great when using futures and transforms.
+great when using futures and transforms. One drawback with lambdas though is
+that when a lambda is supplied as an argument to a method with overloaded
+parameters, the compiler may fail to figure out which variant of a method call
+that is intended to be used.
 
-Ideally you would want to do something like this:
+Ideally, applying java 8 lambdas to Guava's Futures.transform() would look
+something like this:
 ```java
 public static <A, B> ListenableFuture<B> example(ListenableFuture<A> future) {
   return Futures.transform(future, a -> toB(a));
 }
 ```
 
-This doesn't actually work though, because Futures.transform has two variants:
-one that takes a Function and one that takes an AsyncFunction.
-Hence the compiler can't determine which variant to use without additional
-type information.
+Unfortunately this doesn't actually work because Futures.transform has
+two variants: one that takes a Function as it's second parameter and one that
+takes an AsyncFunction. The compiler can't determine which variant to use
+without additional type information.
 
-To work around that you have to cast it like this:
+You could work around that you have to cast it like this:
 ```java
 public static <A, B> ListenableFuture<B> example(ListenableFuture<A> future) {
   return Futures.transform(future, (Function<A, B>) a -> toB(a));
@@ -76,19 +80,21 @@ becomes more verbose).
 final ListenableFuture<A> futureA = getFutureA();
 final ListenableFuture<B> futureB = getFutureB();
 
-return Futures.transform(Futures.allAsList(futureA, futureB), 
-    list -> combine((A) list.get(0), (B) list.get(1));
+ListenableFuture<C> ret = Futures.transform(Futures.allAsList(futureA, futureB),
+    (Function<List<?>, C>)list -> combine((A) list.get(0), (B) list.get(1));
 ```
+where combine is a method with parameters of type A and B returning C.
+
 This one has the problem that you have to manually make sure that the casts and
 ordering are correct, otherwise you will get ClassCastException.
 
-You could also do this one instead to avoid casts:
+You could also access the futures directly to avoid casts:
 ```java
 final ListenableFuture<A> futureA = getFutureA();
 final ListenableFuture<B> futureB = getFutureB();
 
-return Futures.transform(Futures.allAsList(futureA, futureB), 
-    list -> combine(getUnchecked(futureA), getUnchecked(futureB));
+ListenableFuture<C> ret = Futures.transform(Futures.allAsList(futureA, futureB),
+    (Function<List<?>, C>)list -> combine(Futures.getUnchecked(futureA), Futures.getUnchecked(futureB));
 ```
 Now you instead need to make sure that the futures in the transform input are
 the same as the ones you getUnchecked. If you fail to do this, things may work
@@ -101,7 +107,7 @@ To simplify these use cases we have a couple of helper functions:
 final ListenableFuture<A> futureA = getFutureA();
 final ListenableFuture<B> futureB = getFutureB();
 
-return FuturesExtra.syncTransform2(futureA, futureB,
+ListenableFuture<C> FuturesExtra.syncTransform2(futureA, futureB,
     (a, b) -> combine(a, b));
 ```
 
@@ -109,14 +115,15 @@ This is much clearer! We don't need any type information because the lambda can
 infer it, and we avoid the potential bugs that can occur as a result of the
 first to examples.
 
-The tuple transform can be used up to 6 arguments. If you need more than that,
-some refactoring is likely in place, but you can also use the JoinedResult:
+The tuple transform can be used up to 6 arguments named syncTransform2() through
+syncTransform6(). If you need more than that you could probably benefit from
+some refactoring, but you can also use FuturesExtra.join():
 
 ```java
 final ListenableFuture<A> futureA = getFutureA();
 final ListenableFuture<B> futureB = getFutureB();
 
-final ListenableFuture<JoinedResult> futureJoined = FuturesExtra.join(futureA, futureB);
+final ListenableFuture<JoinedResults> futureJoined = FuturesExtra.join(futureA, futureB);
 return Futures.transform(futureJoined,
     joined -> combine(joined.get(futureA), joined.get(futureB)));
 ```
