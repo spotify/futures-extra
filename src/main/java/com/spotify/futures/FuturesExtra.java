@@ -153,20 +153,6 @@ public class FuturesExtra {
     return promise;
   }
 
-  /**
-   * @deprecated
-   * use {@link #syncTransform2(com.google.common.util.concurrent.ListenableFuture,
-   * com.google.common.util.concurrent.ListenableFuture,
-   * com.spotify.futures.FuturesExtra.Function2)} instead
-   */
-  @Deprecated
-  public static <Z, A, B> ListenableFuture<Z> transform(
-          ListenableFuture<A> a,
-          ListenableFuture<B> b,
-          final Function2<Z, ? super A, ? super B> function) {
-    return syncTransform2(a, b, function);
-  }
-
   public static <Z, A, B> ListenableFuture<Z> syncTransform2(
           ListenableFuture<A> a,
           ListenableFuture<B> b,
@@ -183,20 +169,6 @@ public class FuturesExtra {
     Z apply(A a, B b);
   }
 
-  /**
-   * @deprecated
-   * use {@link #asyncTransform2(com.google.common.util.concurrent.ListenableFuture,
-   * com.google.common.util.concurrent.ListenableFuture,
-   * com.spotify.futures.FuturesExtra.AsyncFunction2)} instead
-   */
-  @Deprecated
-  public static <Z, A, B> ListenableFuture<Z> transform(
-          ListenableFuture<A> a,
-          ListenableFuture<B> b,
-          final AsyncFunction2<Z, ? super A, ? super B> function) {
-    return asyncTransform2(a, b, function);
-  }
-
   public static <Z, A, B> ListenableFuture<Z> asyncTransform2(
           ListenableFuture<A> a,
           ListenableFuture<B> b,
@@ -211,22 +183,6 @@ public class FuturesExtra {
 
   public interface AsyncFunction2<Z, A, B> {
     ListenableFuture<Z> apply(A a, B b);
-  }
-
-  /**
-   * @deprecated
-   * use {@link #syncTransform3(com.google.common.util.concurrent.ListenableFuture,
-   * com.google.common.util.concurrent.ListenableFuture,
-   * com.google.common.util.concurrent.ListenableFuture,
-   * com.spotify.futures.FuturesExtra.Function3)} instead
-   */
-  @Deprecated
-  public static <Z, A, B, C> ListenableFuture<Z> transform(
-          ListenableFuture<A> a,
-          ListenableFuture<B> b,
-          ListenableFuture<C> c,
-          final Function3<Z, ? super A, ? super B, ? super C> function) {
-    return syncTransform3(a, b, c, function);
   }
 
   public static <Z, A, B, C> ListenableFuture<Z> syncTransform3(
@@ -246,22 +202,6 @@ public class FuturesExtra {
     Z apply(A a, B b, C c);
   }
 
-  /**
-   * @deprecated
-   * use {@link #asyncTransform3(com.google.common.util.concurrent.ListenableFuture,
-   * com.google.common.util.concurrent.ListenableFuture,
-   * com.google.common.util.concurrent.ListenableFuture,
-   * com.spotify.futures.FuturesExtra.AsyncFunction3)} instead
-   */
-  @Deprecated
-  public static <Z, A, B, C> ListenableFuture<Z> transform(
-          ListenableFuture<A> a,
-          ListenableFuture<B> b,
-          ListenableFuture<C> c,
-          final AsyncFunction3<Z, ? super A, ? super B, ? super C> function) {
-    return asyncTransform3(a, b, c, function);
-  }
-
   public static <Z, A, B, C> ListenableFuture<Z> asyncTransform3(
           ListenableFuture<A> a,
           ListenableFuture<B> b,
@@ -277,24 +217,6 @@ public class FuturesExtra {
 
   public interface AsyncFunction3<Z, A, B, C> {
     ListenableFuture<Z> apply(A a, B b, C c);
-  }
-
-  /**
-   * @deprecated
-   * use {@link #syncTransform4(com.google.common.util.concurrent.ListenableFuture,
-   * com.google.common.util.concurrent.ListenableFuture,
-   * com.google.common.util.concurrent.ListenableFuture,
-   * com.google.common.util.concurrent.ListenableFuture,
-   * com.spotify.futures.FuturesExtra.Function4)} instead
-   */
-  @Deprecated
-  public static <Z, A, B, C, D> ListenableFuture<Z> transform(
-          ListenableFuture<A> a,
-          ListenableFuture<B> b,
-          ListenableFuture<C> c,
-          ListenableFuture<D> d,
-          final Function4<Z, ? super A, ? super B, ? super C, ? super D> function) {
-    return syncTransform4(a, b, c, d, function);
   }
 
   public static <Z, A, B, C, D> ListenableFuture<Z> syncTransform4(
@@ -316,24 +238,6 @@ public class FuturesExtra {
     Z apply(A a, B b, C c, D d);
   }
 
-  /**
-   * @deprecated
-   * use {@link #asyncTransform4(com.google.common.util.concurrent.ListenableFuture,
-   * com.google.common.util.concurrent.ListenableFuture,
-   * com.google.common.util.concurrent.ListenableFuture,
-   * com.google.common.util.concurrent.ListenableFuture,
-   * com.spotify.futures.FuturesExtra.AsyncFunction4)} instead
-   */
-  @Deprecated
-  public static <Z, A, B, C, D> ListenableFuture<Z> transform(
-          ListenableFuture<A> a,
-          ListenableFuture<B> b,
-          ListenableFuture<C> c,
-          ListenableFuture<D> d,
-          final AsyncFunction4<Z, ? super A, ? super B, ? super C, ? super D> function) {
-    return asyncTransform4(a, b, c, d, function);
-  }
-
   public static <Z, A, B, C, D> ListenableFuture<Z> asyncTransform4(
           ListenableFuture<A> a,
           ListenableFuture<B> b,
@@ -351,26 +255,6 @@ public class FuturesExtra {
 
   public interface AsyncFunction4<Z, A, B, C, D> {
     ListenableFuture<Z> apply(A a, B b, C c, D d);
-  }
-
-  /**
-   * @deprecated
-   * use {@link #syncTransform5(com.google.common.util.concurrent.ListenableFuture,
-   * com.google.common.util.concurrent.ListenableFuture,
-   * com.google.common.util.concurrent.ListenableFuture,
-   * com.google.common.util.concurrent.ListenableFuture,
-   * com.google.common.util.concurrent.ListenableFuture,
-   * com.spotify.futures.FuturesExtra.Function5)} instead
-   */
-  @Deprecated
-  public static <Z, A, B, C, D, E> ListenableFuture<Z> transform(
-          ListenableFuture<A> a,
-          ListenableFuture<B> b,
-          ListenableFuture<C> c,
-          ListenableFuture<D> d,
-          ListenableFuture<E> e,
-          final Function5<Z, ? super A, ? super B, ? super C, ? super D, ? super E> function) {
-    return syncTransform5(a, b, c, d, e, function);
   }
 
   public static <Z, A, B, C, D, E> ListenableFuture<Z> syncTransform5(
@@ -392,26 +276,6 @@ public class FuturesExtra {
 
   public interface Function5<Z, A, B, C, D, E> {
     Z apply(A a, B b, C c, D d, E e);
-  }
-
-  /**
-   * @deprecated
-   * use {@link #asyncTransform5(com.google.common.util.concurrent.ListenableFuture,
-   * com.google.common.util.concurrent.ListenableFuture,
-   * com.google.common.util.concurrent.ListenableFuture,
-   * com.google.common.util.concurrent.ListenableFuture,
-   * com.google.common.util.concurrent.ListenableFuture,
-   * com.spotify.futures.FuturesExtra.AsyncFunction5)} instead
-   */
-  public static <Z, A, B, C, D, E> ListenableFuture<Z> transform(
-          ListenableFuture<A> a,
-          ListenableFuture<B> b,
-          ListenableFuture<C> c,
-          ListenableFuture<D> d,
-          ListenableFuture<E> e,
-          final AsyncFunction5<Z, ? super A, ? super B, ? super C,
-                  ? super D, ? super E> function) {
-    return asyncTransform5(a, b, c, d, e, function);
   }
 
   public static <Z, A, B, C, D, E> ListenableFuture<Z> asyncTransform5(
@@ -436,28 +300,6 @@ public class FuturesExtra {
     ListenableFuture<Z> apply(A a, B b, C c, D d, E e);
   }
 
-  /**
-   * @deprecated
-   * use {@link #syncTransform6(com.google.common.util.concurrent.ListenableFuture,
-   * com.google.common.util.concurrent.ListenableFuture,
-   * com.google.common.util.concurrent.ListenableFuture,
-   * com.google.common.util.concurrent.ListenableFuture,
-   * com.google.common.util.concurrent.ListenableFuture,
-   * com.google.common.util.concurrent.ListenableFuture,
-   * com.spotify.futures.FuturesExtra.Function6)} instead
-   */
-  public static <Z, A, B, C, D, E, F> ListenableFuture<Z> transform(
-      ListenableFuture<A> a,
-      ListenableFuture<B> b,
-      ListenableFuture<C> c,
-      ListenableFuture<D> d,
-      ListenableFuture<E> e,
-      ListenableFuture<F> f,
-      final Function6<Z, ? super A, ? super B, ? super C,
-              ? super D, ? super E, ? super F> function) {
-    return syncTransform6(a, b, c, d, e, f, function);
-  }
-
   public static <Z, A, B, C, D, E, F> ListenableFuture<Z> syncTransform6(
       ListenableFuture<A> a,
       ListenableFuture<B> b,
@@ -479,28 +321,6 @@ public class FuturesExtra {
 
   public interface Function6<Z, A, B, C, D, E, F> {
     Z apply(A a, B b, C c, D d, E e, F f);
-  }
-
-  /**
-   * @deprecated
-   * use {@link #asyncTransform6(com.google.common.util.concurrent.ListenableFuture,
-   * com.google.common.util.concurrent.ListenableFuture,
-   * com.google.common.util.concurrent.ListenableFuture,
-   * com.google.common.util.concurrent.ListenableFuture,
-   * com.google.common.util.concurrent.ListenableFuture,
-   * com.google.common.util.concurrent.ListenableFuture,
-   * com.spotify.futures.FuturesExtra.AsyncFunction6)} instead
-   */
-  public static <Z, A, B, C, D, E, F> ListenableFuture<Z> transform(
-      ListenableFuture<A> a,
-      ListenableFuture<B> b,
-      ListenableFuture<C> c,
-      ListenableFuture<D> d,
-      ListenableFuture<E> e,
-      ListenableFuture<F> f,
-      final AsyncFunction6<Z, ? super A, ? super B, ? super C,
-              ? super D, ? super E, ? super F> function) {
-    return asyncTransform6(a, b, c, d, e, f, function);
   }
 
   public static <Z, A, B, C, D, E, F> ListenableFuture<Z> asyncTransform6(
