@@ -15,7 +15,9 @@
  */
 package com.spotify.futures;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.AsyncFunction;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
@@ -261,6 +263,30 @@ public class FuturesExtraTest {
         throw new RuntimeException("value too low");
       }
     }
+  }
+
+  @Test
+  public void testSyncTransform() throws Exception {
+    ListenableFuture<String> future = Futures.immediateFuture("a");
+    assertEquals("aa", FuturesExtra.syncTransform(future,
+            new Function<String, String>() {
+              @Override
+              public String apply(String s) {
+                return s + s;
+              }
+            }).get());
+  }
+
+  @Test
+  public void testAsyncTransform() throws Exception {
+    ListenableFuture<String> future = Futures.immediateFuture("a");
+    assertEquals("aa", FuturesExtra.asyncTransform(future,
+            new AsyncFunction<String, String>() {
+              @Override
+              public ListenableFuture<String> apply(String s) {
+                return Futures.immediateFuture(s + s);
+              }
+            }).get());
   }
 
   @Test

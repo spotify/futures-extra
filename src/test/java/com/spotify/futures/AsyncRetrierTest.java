@@ -118,6 +118,26 @@ public class AsyncRetrierTest {
   }
 
   @Test
+  public void testSupplierThrows() throws Exception {
+    reset(fun);
+    when(fun.get())
+            .thenThrow(RuntimeException.class)
+            .thenReturn(immediateFuture("success"));
+
+    ListenableFuture<String> retry = retrier.retry(fun, 5, 100);
+
+    executorService.tick(99, MILLISECONDS);
+    assertFalse(retry.isDone());
+
+    executorService.tick(1, MILLISECONDS);
+    assertTrue(retry.isDone());
+
+    String s = getUninterruptibly(retry);
+
+    assertEquals("success", s);
+  }
+
+  @Test
   public void testRetryFailing() throws Exception {
     ListenableFuture<String> retry = retrier.retry(fun, 1, 0);
 
