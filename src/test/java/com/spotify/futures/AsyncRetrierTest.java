@@ -19,16 +19,11 @@ package com.spotify.futures;
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
 import com.google.common.util.concurrent.ListenableFuture;
-
+import org.jmock.lib.concurrent.DeterministicScheduler;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import static com.google.common.util.concurrent.Futures.immediateFailedFuture;
 import static com.google.common.util.concurrent.Futures.immediateFuture;
@@ -36,14 +31,10 @@ import static com.google.common.util.concurrent.Uninterruptibles.getUninterrupti
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 public class AsyncRetrierTest {
@@ -51,8 +42,7 @@ public class AsyncRetrierTest {
   @Mock
   Supplier<ListenableFuture<String>> fun;
 
-  @Mock
-  ScheduledExecutorService executorService;
+  DeterministicScheduler executorService = new DeterministicScheduler();
 
   AsyncRetrier retrier;
 
@@ -67,15 +57,6 @@ public class AsyncRetrierTest {
 
     when(fun.get()).thenReturn(f1, f2, f3, f4);
 
-    when(executorService.schedule(any(Runnable.class), anyLong(), any(TimeUnit.class)))
-        .then(new Answer<Object>() {
-          @Override
-          public Object answer(InvocationOnMock invocation) throws Throwable {
-            Runnable command = (Runnable) invocation.getArguments()[0];
-            command.run();
-            return null;
-          }
-        });
 
     retrier = AsyncRetrier.create(executorService);
   }
@@ -83,30 +64,43 @@ public class AsyncRetrierTest {
   @Test
   public void testRetry() throws Exception {
     ListenableFuture<String> retry = retrier.retry(fun, 5, 0);
+
+    executorService.tick(1, MILLISECONDS);
+    assertTrue(retry.isDone());
+
     String s = getUninterruptibly(retry);
 
     assertEquals("success", s);
-    verifyZeroInteractions(executorService);
   }
 
   @Test
   public void testRetryDelayMillis() throws Exception {
     ListenableFuture<String> retry = retrier.retry(fun, 5, 100);
+
+    executorService.tick(199, MILLISECONDS);
+    assertFalse(retry.isDone());
+
+    executorService.tick(1, MILLISECONDS);
+    assertTrue(retry.isDone());
+
     String s = getUninterruptibly(retry);
 
     assertEquals("success", s);
-    verify(executorService, times(2))
-        .schedule(any(Runnable.class), eq(100L), eq(MILLISECONDS));
   }
 
   @Test
   public void testRetryDelayTimeUnit() throws Exception {
     ListenableFuture<String> retry = retrier.retry(fun, 5, 1, SECONDS);
+
+    executorService.tick(1999, MILLISECONDS);
+    assertFalse(retry.isDone());
+
+    executorService.tick(1, MILLISECONDS);
+    assertTrue(retry.isDone());
+
     String s = getUninterruptibly(retry);
 
     assertEquals("success", s);
-    verify(executorService, times(2))
-        .schedule(any(Runnable.class), eq(1L), eq(SECONDS));
   }
 
   @Test
@@ -115,15 +109,20 @@ public class AsyncRetrierTest {
     when(fun.get()).thenReturn(immediateFuture("direct success"));
 
     ListenableFuture<String> retry = retrier.retry(fun, 5, 100);
+
+    assertTrue(retry.isDone());
+
     String s = getUninterruptibly(retry);
 
     assertEquals("direct success", s);
-    verifyZeroInteractions(executorService);
   }
 
   @Test
   public void testRetryFailing() throws Exception {
     ListenableFuture<String> retry = retrier.retry(fun, 1, 0);
+
+    executorService.tick(1, MILLISECONDS);
+    assertTrue(retry.isDone());
 
     try {
       getUninterruptibly(retry);
@@ -137,6 +136,9 @@ public class AsyncRetrierTest {
   public void testRetryFailureOnCustomPredicate() throws Exception {
     ListenableFuture<String> retry = retrier.retry(fun, 2, 0, SECONDS, successPredicate());
 
+    executorService.tick(1, MILLISECONDS);
+    assertTrue(retry.isDone());
+
     try {
       getUninterruptibly(retry);
       fail();
@@ -148,6 +150,9 @@ public class AsyncRetrierTest {
   @Test
   public void testRetrySuccessOnCustomPredicate() throws Exception {
     ListenableFuture<String> retry = retrier.retry(fun, 3, 0, SECONDS, successPredicate());
+
+    executorService.tick(1, MILLISECONDS);
+    assertTrue(retry.isDone());
 
     assertEquals("success!!!", getUninterruptibly(retry));
   }
