@@ -159,16 +159,15 @@ public class FuturesExtra {
   }
 
   /**
-   * Transform the results of two {@link ListenableFuture}s a and b once both has completed using
-   * {@code function} and complete the returned ListenableFuture at that point. This method is
-   * synchronous in the sense that function.apply() executes synchronously and returns a value
-   * and not a {@link ListenableFuture}.
+   * Transform the input futures into a single future, using the provided
+   * transform function. The transformation follows the same semantics as as
+   * {@link Futures#transform(ListenableFuture, Function)} and the input
+   * futures are combined using {@link Futures#allAsList}.
    *
-   * @param a the first ListenableFuture
-   * @param b the second ListenableFuture
-   * @param function a Function2 implementation, possibly expressed as a java 8 lambda
-   * @return a ListenableFuture of the result of {@code function}, that completes as soon as
-   * the supplied Function2.apply() invocation has completed.
+   * @param a a ListenableFuture to combine
+   * @param b a ListenableFuture to combine
+   * @param function the implementation of the transform
+   * @return a ListenableFuture holding the result of function.apply()
    */
   public static <Z, A, B> ListenableFuture<Z> syncTransform2(
           ListenableFuture<A> a,
@@ -183,30 +182,30 @@ public class FuturesExtra {
   }
 
   /**
-   * Implementations of this interface is used in {@link #syncTransform2} to synchronously
-   * transform two values into a third value.
+   * Implementations of this interface is used to synchronously transform the
+   * input values into an output value.
    */
   public interface Function2<Z, A, B> {
     /**
-     * Combine a and b and return the result.
-     * @param a the first value.
-     * @param b the second value.
-     * @return a result of the combination of a and b.
+     * Combine the inputs into the returned output
+     *
+     * @param a an input value
+     * @param b an input value
+     * @return a result of the combination of the input values.
      */
     Z apply(A a, B b);
   }
 
   /**
-   * Asynchronously transform the result of two {@link ListenableFuture}s a and b once both
-   * has completed using {@code function} and complete the returned ListenableFuture at the point.
-   * Execution is asynchronous in the sense that function returns a Future that may be executed
-   * asynchronously and once it completes it will complete the future that this method returns.
+   * Transform the input futures into a single future, using the provided
+   * transform function. The transformation follows the same semantics as as
+   * {@link Futures#transform(ListenableFuture, AsyncFunction)} and the input
+   * futures are combined using {@link Futures#allAsList}.
    *
-   * @param a the first ListenableFuture
-   * @param b the second ListenableFuture
-   * @param function an AsyncFunction2 implementation, possibly expressed as a java 8 lambda.
-   * @return a ListenableFuture of the result of {@code function}, that completes as soon as
-   * the future that gets returned by the supplied Function2.apply() has completed.
+   * @param a a ListenableFuture to combine
+   * @param b a ListenableFuture to combine
+   * @param function the implementation of the transform
+   * @return a ListenableFuture holding the result of function.apply()
    */
   public static <Z, A, B> ListenableFuture<Z> asyncTransform2(
           ListenableFuture<A> a,
@@ -237,17 +236,16 @@ public class FuturesExtra {
   }
 
   /**
-   * Transform the results of 3 {@link ListenableFuture}s a, b and c once all has completed using
-   * {@code function} and complete the returned ListenableFuture at that point. This method is
-   * synchronous in the sense that function.apply() executes synchronously and returns a value
-   * and not a {@link java.util.concurrent.Future}.
+   * Transform the input futures into a single future, using the provided
+   * transform function. The transformation follows the same semantics as as
+   * {@link Futures#transform(ListenableFuture, Function)} and the input
+   * futures are combined using {@link Futures#allAsList}.
    *
-   * @param a the first ListenableFuture.
-   * @param b the second ListenableFuture.
-   * @param c the third ListenableFuture.
-   * @param function a Function3 implementation, possibly expressed as a java 8 lambda
-   * @return a ListenableFuture of the result of {@code function}, that completes as soon as
-   * the supplied Function3.apply() invocation has completed.
+   * @param a a ListenableFuture to combine
+   * @param b a ListenableFuture to combine
+   * @param c a ListenableFuture to combine
+   * @param function the implementation of the transform
+   * @return a ListenableFuture holding the result of function.apply()
    */
   public static <Z, A, B, C> ListenableFuture<Z> syncTransform3(
           ListenableFuture<A> a,
@@ -262,22 +260,25 @@ public class FuturesExtra {
     });
   }
 
+  /**
+   * Implementations of this interface is used to synchronously transform the
+   * input values into an output value.
+   */
   public interface Function3<Z, A, B, C> {
     Z apply(A a, B b, C c);
   }
 
   /**
-   * Asynchronously transform the result of 3 {@link ListenableFuture}s a, b and c once both
-   * has completed using {@code function} and complete the returned ListenableFuture at the point.
-   * Execution is asynchronous in the sense that function returns a Future that may be executed
-   * asynchronously and once it completes it will complete the future that this method returns.
+   * Transform the input futures into a single future, using the provided
+   * transform function. The transformation follows the same semantics as as
+   * {@link Futures#transform(ListenableFuture, AsyncFunction)} and the input
+   * futures are combined using {@link Futures#allAsList}.
    *
-   * @param a the first ListenableFuture
-   * @param b the second ListenableFuture
-   * @param c the third ListenableFuture
-   * @param function an AsyncFunction3 implementation, possibly expressed as a java 8 lambda.
-   * @return a ListenableFuture of the result of {@code function}, that completes as soon as
-   * the future that gets returned by the supplied Function3.apply() has completed.
+   * @param a a ListenableFuture to combine
+   * @param b a ListenableFuture to combine
+   * @param c a ListenableFuture to combine
+   * @param function the implementation of the transform
+   * @return a ListenableFuture holding the result of function.apply()
    */
   public static <Z, A, B, C> ListenableFuture<Z> asyncTransform3(
           ListenableFuture<A> a,
@@ -297,18 +298,17 @@ public class FuturesExtra {
   }
 
   /**
-   * Transform the results of 4 {@link ListenableFuture}s a, b, c and d once all has completed using
-   * {@code function} and complete the returned ListenableFuture at that point. This method is
-   * synchronous in the sense that function.apply() executes synchronously and returns a value
-   * and not a {@link java.util.concurrent.Future}.
+   * Transform the input futures into a single future, using the provided
+   * transform function. The transformation follows the same semantics as as
+   * {@link Futures#transform(ListenableFuture, Function)} and the input
+   * futures are combined using {@link Futures#allAsList}.
    *
-   * @param a the first ListenableFuture.
-   * @param b the second ListenableFuture.
-   * @param c the third ListenableFuture.
-   * @param d the fourth ListenableFuture.
-   * @param function a Function4 implementation, possibly expressed as a java 8 lambda
-   * @return a ListenableFuture of the result of {@code function}, that completes as soon as
-   * the supplied Function4.apply() invocation has completed.
+   * @param a a ListenableFuture to combine
+   * @param b a ListenableFuture to combine
+   * @param c a ListenableFuture to combine
+   * @param d a ListenableFuture to combine
+   * @param function the implementation of the transform
+   * @return a ListenableFuture holding the result of function.apply()
    */
   public static <Z, A, B, C, D> ListenableFuture<Z> syncTransform4(
           ListenableFuture<A> a,
@@ -325,23 +325,26 @@ public class FuturesExtra {
     });
   }
 
+  /**
+   * Implementations of this interface is used to synchronously transform the
+   * input values into an output value.
+   */
   public interface Function4<Z, A, B, C, D> {
     Z apply(A a, B b, C c, D d);
   }
 
   /**
-   * Asynchronously transform the result of 3 {@link ListenableFuture}s a, b, c and d once both
-   * has completed using {@code function} and complete the returned ListenableFuture at the point.
-   * Execution is asynchronous in the sense that function returns a Future that may be executed
-   * asynchronously and once it completes it will complete the future that this method returns.
+   * Transform the input futures into a single future, using the provided
+   * transform function. The transformation follows the same semantics as as
+   * {@link Futures#transform(ListenableFuture, AsyncFunction)} and the input
+   * futures are combined using {@link Futures#allAsList}.
    *
-   * @param a the first ListenableFuture
-   * @param b the second ListenableFuture
-   * @param c the third ListenableFuture
-   * @param d the fourth ListenableFuture
-   * @param function an AsyncFunction4 implementation, possibly expressed as a java 8 lambda.
-   * @return a ListenableFuture of the result of {@code function}, that completes as soon as
-   * the future that gets returned by the supplied Function4.apply() has completed.
+   * @param a a ListenableFuture to combine
+   * @param b a ListenableFuture to combine
+   * @param c a ListenableFuture to combine
+   * @param d a ListenableFuture to combine
+   * @param function the implementation of the transform
+   * @return a ListenableFuture holding the result of function.apply()
    */
   public static <Z, A, B, C, D> ListenableFuture<Z> asyncTransform4(
           ListenableFuture<A> a,
@@ -363,19 +366,18 @@ public class FuturesExtra {
   }
 
   /**
-   * Transform the results of 5 {@link ListenableFuture}s a, b, c, d and e once all has completed
-   * using {@code function} and complete the returned ListenableFuture at that point. This method is
-   * synchronous in the sense that function.apply() executes synchronously and returns a value
-   * and not a {@link java.util.concurrent.Future}.
+   * Transform the input futures into a single future, using the provided
+   * transform function. The transformation follows the same semantics as as
+   * {@link Futures#transform(ListenableFuture, Function)} and the input
+   * futures are combined using {@link Futures#allAsList}.
    *
-   * @param a the first ListenableFuture.
-   * @param b the second ListenableFuture.
-   * @param c the third ListenableFuture.
-   * @param d the fourth ListenableFuture.
-   * @param e the fifth ListenableFuture.
-   * @param function a Function5 implementation, possibly expressed as a java 8 lambda
-   * @return a ListenableFuture of the result of {@code function}, that completes as soon as
-   * the supplied Function5.apply() invocation has completed.
+   * @param a a ListenableFuture to combine
+   * @param b a ListenableFuture to combine
+   * @param c a ListenableFuture to combine
+   * @param d a ListenableFuture to combine
+   * @param e a ListenableFuture to combine
+   * @param function the implementation of the transform
+   * @return a ListenableFuture holding the result of function.apply()
    */
   public static <Z, A, B, C, D, E> ListenableFuture<Z> syncTransform5(
           ListenableFuture<A> a,
@@ -394,24 +396,27 @@ public class FuturesExtra {
     });
   }
 
+  /**
+   * Implementations of this interface is used to synchronously transform the
+   * input values into an output value.
+   */
   public interface Function5<Z, A, B, C, D, E> {
     Z apply(A a, B b, C c, D d, E e);
   }
 
   /**
-   * Asynchronously transform the result of 3 {@link ListenableFuture}s a, b, c, d and e once both
-   * has completed using {@code function} and complete the returned ListenableFuture at the point.
-   * Execution is asynchronous in the sense that function returns a Future that may be executed
-   * asynchronously and once it completes it will complete the future that this method returns.
+   * Transform the input futures into a single future, using the provided
+   * transform function. The transformation follows the same semantics as as
+   * {@link Futures#transform(ListenableFuture, AsyncFunction)} and the input
+   * futures are combined using {@link Futures#allAsList}.
    *
-   * @param a the first ListenableFuture
-   * @param b the second ListenableFuture
-   * @param c the third ListenableFuture
-   * @param d the fourth ListenableFuture
-   * @param e the fifth ListenableFuture
-   * @param function an AsyncFunction5 implementation, possibly expressed as a java 8 lambda.
-   * @return a ListenableFuture of the result of {@code function}, that completes as soon as
-   * the future that gets returned by the supplied Function5.apply() has completed.
+   * @param a a ListenableFuture to combine
+   * @param b a ListenableFuture to combine
+   * @param c a ListenableFuture to combine
+   * @param d a ListenableFuture to combine
+   * @param e a ListenableFuture to combine
+   * @param function the implementation of the transform
+   * @return a ListenableFuture holding the result of function.apply()
    */
   public static <Z, A, B, C, D, E> ListenableFuture<Z> asyncTransform5(
           ListenableFuture<A> a,
@@ -436,20 +441,19 @@ public class FuturesExtra {
   }
 
   /**
-   * Transform the results of 6 {@link ListenableFuture}s a, b, c, d, e and f once all has completed
-   * using {@code function} and complete the returned ListenableFuture at that point. This method is
-   * synchronous in the sense that function.apply() executes synchronously and returns a value
-   * and not a {@link java.util.concurrent.Future}.
+   * Transform the input futures into a single future, using the provided
+   * transform function. The transformation follows the same semantics as as
+   * {@link Futures#transform(ListenableFuture, Function)} and the input
+   * futures are combined using {@link Futures#allAsList}.
    *
-   * @param a the first ListenableFuture.
-   * @param b the second ListenableFuture.
-   * @param c the third ListenableFuture.
-   * @param d the fourth ListenableFuture.
-   * @param e the fifth ListenableFuture.
-   * @param f the sixth ListenableFuture.
-   * @param function a Function5 implementation, possibly expressed as a java 8 lambda
-   * @return a ListenableFuture of the result of {@code function}, that completes as soon as
-   * the supplied Function5.apply() invocation has completed.
+   * @param a a ListenableFuture to combine
+   * @param b a ListenableFuture to combine
+   * @param c a ListenableFuture to combine
+   * @param d a ListenableFuture to combine
+   * @param e a ListenableFuture to combine
+   * @param f a ListenableFuture to combine
+   * @param function the implementation of the transform
+   * @return a ListenableFuture holding the result of function.apply()
    */
   public static <Z, A, B, C, D, E, F> ListenableFuture<Z> syncTransform6(
       ListenableFuture<A> a,
@@ -470,26 +474,28 @@ public class FuturesExtra {
     });
   }
 
+  /**
+   * Implementations of this interface is used to synchronously transform the
+   * input values into an output value.
+   */
   public interface Function6<Z, A, B, C, D, E, F> {
     Z apply(A a, B b, C c, D d, E e, F f);
   }
 
   /**
-   * Asynchronously transform the result of 3 {@link ListenableFuture}s a, b, c, d, e and f once
-   * both has completed using {@code function} and complete the returned ListenableFuture at the
-   * point.
-   * Execution is asynchronous in the sense that function returns a Future that may be executed
-   * asynchronously and once it completes it will complete the future that this method returns.
+   * Transform the input futures into a single future, using the provided
+   * transform function. The transformation follows the same semantics as as
+   * {@link Futures#transform(ListenableFuture, AsyncFunction)} and the input
+   * futures are combined using {@link Futures#allAsList}.
    *
-   * @param a the first ListenableFuture
-   * @param b the second ListenableFuture
-   * @param c the third ListenableFuture
-   * @param d the fourth ListenableFuture
-   * @param e the fifth ListenableFuture
-   * @param f the sixth ListenableFuture
-   * @param function an AsyncFunction6 implementation, possibly expressed as a java 8 lambda.
-   * @return a ListenableFuture of the result of {@code function}, that completes as soon as
-   * the future that gets returned by the supplied Function6.apply() has completed.
+   * @param a a ListenableFuture to combine
+   * @param b a ListenableFuture to combine
+   * @param c a ListenableFuture to combine
+   * @param d a ListenableFuture to combine
+   * @param e a ListenableFuture to combine
+   * @param f a ListenableFuture to combine
+   * @param function the implementation of the transform
+   * @return a ListenableFuture holding the result of function.apply()
    */
   public static <Z, A, B, C, D, E, F> ListenableFuture<Z> asyncTransform6(
       ListenableFuture<A> a,
