@@ -17,9 +17,11 @@ package com.spotify.futures;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import com.google.common.collect.Lists;
 import org.junit.Test;
 
 import com.google.common.util.concurrent.Futures;
@@ -38,6 +40,16 @@ public class JoinedResultsTest {
     assertEquals("alsoString", joined.get(secondString));
     assertEquals(Integer.valueOf(1), joined.get(integer));
     assertEquals("value", joined.get(list).get(0));
+  }
+
+  @Test
+  public void testWithList() throws Exception {
+    ListenableFuture<String> futureA = Futures.immediateFuture("a");
+    ListenableFuture<String> futureB = Futures.immediateFuture("b");
+    List<ListenableFuture<?>> list = Arrays.<ListenableFuture<?>>asList(futureA, futureB);
+    JoinedResults joined = FuturesExtra.join(list).get();
+    assertEquals("a", joined.get(futureA));
+    assertEquals("b", joined.get(futureB));
   }
 
   @Test
