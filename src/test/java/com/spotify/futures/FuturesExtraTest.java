@@ -262,4 +262,169 @@ public class FuturesExtraTest {
       }
     }
   }
+
+  @Test
+  public void testSyncTransform2() throws Exception {
+    ListenableFuture<String> futureA = Futures.immediateFuture("a");
+    ListenableFuture<String> futureB = Futures.immediateFuture("b");
+    assertEquals("ab", FuturesExtra.syncTransform2(futureA, futureB,
+            new FuturesExtra.Function2<String, String, String>() {
+              @Override
+              public String apply(String a, String b) {
+                return a + b;
+              }
+            }
+    ).get());
+  }
+
+  @Test
+  public void testAsyncTransform2() throws Exception {
+    ListenableFuture<String> futureA = Futures.immediateFuture("a");
+    ListenableFuture<String> futureB = Futures.immediateFuture("b");
+    assertEquals("ab", FuturesExtra.asyncTransform2(futureA, futureB,
+            new FuturesExtra.AsyncFunction2<String, String, String>() {
+              @Override
+              public ListenableFuture<String> apply(String a, String b) {
+                return Futures.immediateFuture(a + b);
+              }
+            }
+    ).get());
+  }
+
+  @Test
+  public void testSyncTransform3() throws Exception {
+    ListenableFuture<String> futureA = Futures.immediateFuture("a");
+    ListenableFuture<String> futureB = Futures.immediateFuture("b");
+    ListenableFuture<String> futureC = Futures.immediateFuture("c");
+    assertEquals("abc", FuturesExtra.syncTransform3(futureA, futureB, futureC,
+            new FuturesExtra.Function3<String, String, String, String>() {
+              @Override
+              public String apply(String a, String b, String c) {
+                return a + b + c;
+              }
+            }
+    ).get());
+  }
+
+  @Test
+  public void testAsyncTransform3() throws Exception {
+    ListenableFuture<String> futureA = Futures.immediateFuture("a");
+    ListenableFuture<String> futureB = Futures.immediateFuture("b");
+    ListenableFuture<String> futureC = Futures.immediateFuture("c");
+    assertEquals("abc", FuturesExtra.asyncTransform3(futureA, futureB, futureC,
+            new FuturesExtra.AsyncFunction3<String, String, String, String>() {
+              @Override
+              public ListenableFuture<String> apply(String a, String b, String c) {
+                return Futures.immediateFuture(a + b + c);
+              }
+            }
+    ).get());
+  }
+
+  @Test
+  public void testSyncTransform4() throws Exception {
+    ListenableFuture<String> futureA = Futures.immediateFuture("a");
+    ListenableFuture<String> futureB = Futures.immediateFuture("b");
+    ListenableFuture<String> futureC = Futures.immediateFuture("c");
+    ListenableFuture<String> futureD = Futures.immediateFuture("d");
+    assertEquals("abcd", FuturesExtra.syncTransform4(futureA, futureB, futureC, futureD,
+            new FuturesExtra.Function4<String, String, String, String, String>() {
+              @Override
+              public String apply(String a, String b, String c, String d) {
+                return a + b + c + d;
+              }
+            }
+    ).get());
+  }
+
+  @Test
+  public void testAsyncTransform4() throws Exception {
+    ListenableFuture<String> futureA = Futures.immediateFuture("a");
+    ListenableFuture<String> futureB = Futures.immediateFuture("b");
+    ListenableFuture<String> futureC = Futures.immediateFuture("c");
+    ListenableFuture<String> futureD = Futures.immediateFuture("d");
+    assertEquals("abcd", FuturesExtra.asyncTransform4(futureA, futureB, futureC, futureD,
+            new FuturesExtra.AsyncFunction4<String, String, String, String, String>() {
+              @Override
+              public ListenableFuture<String> apply(String a, String b, String c, String d) {
+                return Futures.immediateFuture(a + b + c + d);
+              }
+            }
+    ).get());
+  }
+
+  @Test
+  public void testSyncTransform5() throws Exception {
+    ListenableFuture<String> futureA = Futures.immediateFuture("a");
+    ListenableFuture<String> futureB = Futures.immediateFuture("b");
+    ListenableFuture<String> futureC = Futures.immediateFuture("c");
+    ListenableFuture<String> futureD = Futures.immediateFuture("d");
+    ListenableFuture<String> futureE = Futures.immediateFuture("e");
+    assertEquals("abcde", FuturesExtra.syncTransform5(futureA, futureB, futureC, futureD, futureE,
+            new FuturesExtra.Function5<String, String, String, String, String, String>() {
+              @Override
+              public String apply(String a, String b, String c, String d, String e) {
+                return a + b + c + d + e;
+              }
+            }
+    ).get());
+  }
+
+  @Test
+  public void testAsyncTransform5() throws Exception {
+    ListenableFuture<String> futureA = Futures.immediateFuture("a");
+    ListenableFuture<String> futureB = Futures.immediateFuture("b");
+    ListenableFuture<String> futureC = Futures.immediateFuture("c");
+    ListenableFuture<String> futureD = Futures.immediateFuture("d");
+    ListenableFuture<String> futureE = Futures.immediateFuture("e");
+    assertEquals("abcde", FuturesExtra.asyncTransform5(futureA, futureB, futureC, futureD, futureE,
+            new FuturesExtra.AsyncFunction5<String, String, String, String, String, String>() {
+              @Override
+              public ListenableFuture<String> apply(
+                      String a, String b, String c, String d, String e) {
+                return Futures.immediateFuture(a + b + c + d + e);
+              }
+            }
+    ).get());
+  }
+
+  @Test
+  public void testSyncTransform6() throws Exception {
+    ListenableFuture<String> futureA = Futures.immediateFuture("a");
+    ListenableFuture<String> futureB = Futures.immediateFuture("b");
+    ListenableFuture<String> futureC = Futures.immediateFuture("c");
+    ListenableFuture<String> futureD = Futures.immediateFuture("d");
+    ListenableFuture<String> futureE = Futures.immediateFuture("e");
+    ListenableFuture<String> futureF = Futures.immediateFuture("f");
+    assertEquals("abcdef", FuturesExtra.syncTransform6(
+            futureA, futureB, futureC, futureD, futureE, futureF,
+            new FuturesExtra.Function6<String, String, String, String, String, String, String>() {
+              @Override
+              public String apply(String a, String b, String c, String d, String e, String f) {
+                return a + b + c + d + e + f;
+              }
+            }
+    ).get());
+  }
+
+  @Test
+  public void testAsyncTransform6() throws Exception {
+    ListenableFuture<String> futureA = Futures.immediateFuture("a");
+    ListenableFuture<String> futureB = Futures.immediateFuture("b");
+    ListenableFuture<String> futureC = Futures.immediateFuture("c");
+    ListenableFuture<String> futureD = Futures.immediateFuture("d");
+    ListenableFuture<String> futureE = Futures.immediateFuture("e");
+    ListenableFuture<String> futureF = Futures.immediateFuture("f");
+    assertEquals("abcdef", FuturesExtra.asyncTransform6(
+            futureA, futureB, futureC, futureD, futureE, futureF,
+            new FuturesExtra.AsyncFunction6<
+                    String, String, String, String, String, String, String>() {
+              @Override
+              public ListenableFuture<String> apply(
+                      String a, String b, String c, String d, String e, String f) {
+                return Futures.immediateFuture(a + b + c + d + e + f);
+              }
+            }
+    ).get());
+  }
 }
