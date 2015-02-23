@@ -162,7 +162,7 @@ public class FuturesExtra {
    * Transform the results of two {@link ListenableFuture}s a and b once both has completed using
    * {@code function} and complete the returned ListenableFuture at that point. This method is
    * synchronous in the sense that function.apply() executes synchronously and returns a value
-   * and not a {@link java.util.concurrent.Future}.
+   * and not a {@link ListenableFuture}.
    *
    * @param a the first ListenableFuture
    * @param b the second ListenableFuture
