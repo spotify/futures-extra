@@ -89,6 +89,18 @@ public class AsyncRetrierTest {
   }
 
   @Test
+  public void testRetryWithDefaultDelay() throws Exception {
+    ListenableFuture<String> retry = retrier.retry(fun, 5);
+
+    executorService.tick(1, MILLISECONDS);
+    assertTrue(retry.isDone());
+
+    String s = getUninterruptibly(retry);
+
+    assertEquals("success", s);
+  }
+
+  @Test
   public void testRetryDelayTimeUnit() throws Exception {
     ListenableFuture<String> retry = retrier.retry(fun, 5, 1, SECONDS);
 
