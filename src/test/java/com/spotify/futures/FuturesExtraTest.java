@@ -170,13 +170,13 @@ public class FuturesExtraTest {
   public void testGenericBounds() throws Exception {
     ListenableFuture<Integer> a = Futures.immediateFuture(17);
     ListenableFuture<Integer> b = Futures.immediateFuture(42);
-    ListenableFuture<Integer> result = FuturesExtra.syncTransform2(a, b,  new FuturesExtra.Function2<Integer, Number, Number>() {
+    ListenableFuture<Integer> result = FuturesExtra.syncTransform2(a, b, new FuturesExtra.Function2<Integer, Number, Number>() {
       @Override
       public Integer apply(Number s, Number s2) {
         return s.intValue() + s2.intValue();
       }
     });
-    assertEquals(42+17, result.get().intValue());
+    assertEquals(42 + 17, result.get().intValue());
   }
   public void testSuccessfulSelect() throws Exception {
     final SettableFuture<String> f1 = SettableFuture.create();
@@ -452,5 +452,72 @@ public class FuturesExtraTest {
               }
             }
     ).get());
+  }
+
+  @Test(expected = ExecutionException.class)
+  public void testAsyncException2() throws Exception {
+    ListenableFuture<String> future = FuturesExtra.asyncTransform2(Futures.immediateFuture("A"), Futures.immediateFuture("B"),
+            new FuturesExtra.AsyncFunction2<String, String, String>() {
+              @Override
+              public ListenableFuture<String> apply(String a, String b) throws Exception {
+                throw new Exception("foo");
+              }
+            });
+    future.get();
+  }
+
+  @Test(expected = ExecutionException.class)
+  public void testAsyncException3() throws Exception {
+    ListenableFuture<String> future = FuturesExtra.asyncTransform3(
+            Futures.immediateFuture("A"), Futures.immediateFuture("B"), Futures.immediateFuture("C"),
+            new FuturesExtra.AsyncFunction3<String, String, String, String>() {
+              @Override
+              public ListenableFuture<String> apply(String a, String b, String c) throws Exception {
+                throw new Exception("foo");
+              }
+            });
+    future.get();
+  }
+  @Test(expected = ExecutionException.class)
+  public void testAsyncException4() throws Exception {
+    ListenableFuture<String> future = FuturesExtra.asyncTransform4(
+            Futures.immediateFuture("A"), Futures.immediateFuture("B"),
+            Futures.immediateFuture("C"), Futures.immediateFuture("D"),
+            new FuturesExtra.AsyncFunction4<String, String, String, String, String>() {
+              @Override
+              public ListenableFuture<String> apply(String a, String b, String c, String d) throws Exception {
+                throw new Exception("foo");
+              }
+            });
+    future.get();
+  }
+  @Test(expected = ExecutionException.class)
+  public void testAsyncException5() throws Exception {
+    ListenableFuture<String> future = FuturesExtra.asyncTransform5(
+            Futures.immediateFuture("A"), Futures.immediateFuture("B"),
+            Futures.immediateFuture("C"), Futures.immediateFuture("D"),
+            Futures.immediateFuture("E"),
+            new FuturesExtra.AsyncFunction5<String, String, String, String, String, String>() {
+              @Override
+              public ListenableFuture<String> apply(String a, String b, String c, String d, String e) throws Exception {
+                throw new Exception("foo");
+              }
+            });
+    future.get();
+  }
+
+  @Test(expected = ExecutionException.class)
+  public void testAsyncException6() throws Exception {
+    ListenableFuture<String> future = FuturesExtra.asyncTransform6(
+            Futures.immediateFuture("A"), Futures.immediateFuture("B"),
+            Futures.immediateFuture("C"), Futures.immediateFuture("D"),
+            Futures.immediateFuture("E"), Futures.immediateFuture("F"),
+            new FuturesExtra.AsyncFunction6<String, String, String, String, String, String, String>() {
+              @Override
+              public ListenableFuture<String> apply(String a, String b, String c, String d, String e, String f) throws Exception {
+                throw new Exception("foo");
+              }
+            });
+    future.get();
   }
 }

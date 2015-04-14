@@ -213,7 +213,7 @@ public class FuturesExtra {
           final AsyncFunction2<Z, ? super A, ? super B> function) {
     return transform(Arrays.asList(a, b), new AsyncFunction<List<Object>, Z>() {
       @Override
-      public ListenableFuture<Z> apply(List<Object> results) {
+      public ListenableFuture<Z> apply(List<Object> results) throws Exception {
         return function.apply((A) results.get(0), (B) results.get(1));
       }
     });
@@ -232,7 +232,7 @@ public class FuturesExtra {
      * @param b the second input value.
      * @return a ListenableFuture that will complete once the result of a and b is computed.
      */
-    ListenableFuture<Z> apply(A a, B b);
+    ListenableFuture<Z> apply(A a, B b) throws Exception;
   }
 
   /**
@@ -287,14 +287,14 @@ public class FuturesExtra {
           final AsyncFunction3<Z, ? super A, ? super B, ? super C> function) {
     return transform(Arrays.asList(a, b, c), new AsyncFunction<List<Object>, Z>() {
       @Override
-      public ListenableFuture<Z> apply(List<Object> results) {
+      public ListenableFuture<Z> apply(List<Object> results) throws Exception {
         return function.apply((A) results.get(0), (B) results.get(1), (C) results.get(2));
       }
     });
   }
 
   public interface AsyncFunction3<Z, A, B, C> {
-    ListenableFuture<Z> apply(A a, B b, C c);
+    ListenableFuture<Z> apply(A a, B b, C c) throws Exception;
   }
 
   /**
@@ -354,7 +354,7 @@ public class FuturesExtra {
           final AsyncFunction4<Z, ? super A, ? super B, ? super C, ? super D> function) {
     return transform(Arrays.asList(a, b, c, d), new AsyncFunction<List<Object>, Z>() {
       @Override
-      public ListenableFuture<Z> apply(List<Object> results) {
+      public ListenableFuture<Z> apply(List<Object> results) throws Exception {
         return function.apply(
                 (A) results.get(0), (B) results.get(1), (C) results.get(2), (D) results.get(3));
       }
@@ -362,7 +362,7 @@ public class FuturesExtra {
   }
 
   public interface AsyncFunction4<Z, A, B, C, D> {
-    ListenableFuture<Z> apply(A a, B b, C c, D d);
+    ListenableFuture<Z> apply(A a, B b, C c, D d) throws Exception;
   }
 
   /**
@@ -428,7 +428,7 @@ public class FuturesExtra {
                   ? super D, ? super E> function) {
     return transform(Arrays.asList(a, b, c, d, e), new AsyncFunction<List<Object>, Z>() {
       @Override
-      public ListenableFuture<Z> apply(List<Object> results) {
+      public ListenableFuture<Z> apply(List<Object> results) throws Exception {
         return function.apply(
                 (A) results.get(0), (B) results.get(1), (C) results.get(2),
                 (D) results.get(3), (E) results.get(4));
@@ -437,7 +437,7 @@ public class FuturesExtra {
   }
 
   public interface AsyncFunction5<Z, A, B, C, D, E> {
-    ListenableFuture<Z> apply(A a, B b, C c, D d, E e);
+    ListenableFuture<Z> apply(A a, B b, C c, D d, E e) throws Exception;
   }
 
   /**
@@ -508,7 +508,7 @@ public class FuturesExtra {
               ? super E, ? super F> function) {
     return transform(Arrays.asList(a, b, c, d, e, f), new AsyncFunction<List<Object>, Z>() {
       @Override
-      public ListenableFuture<Z> apply(List<Object> results) {
+      public ListenableFuture<Z> apply(List<Object> results) throws Exception {
         return function.apply(
                 (A) results.get(0), (B) results.get(1), (C) results.get(2),
                 (D) results.get(3), (E) results.get(4), (F) results.get(5));
@@ -517,7 +517,7 @@ public class FuturesExtra {
   }
 
   public interface AsyncFunction6<Z, A, B, C, D, E, F> {
-    ListenableFuture<Z> apply(A a, B b, C c, D d, E e, F f);
+    ListenableFuture<Z> apply(A a, B b, C c, D d, E e, F f) throws Exception;
   }
 
   private static <Z> ListenableFuture<Z> transform(final List<ListenableFuture<?>> inputs,
