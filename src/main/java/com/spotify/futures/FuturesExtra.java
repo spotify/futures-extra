@@ -159,6 +159,62 @@ public class FuturesExtra {
   }
 
   /**
+   * Represents an operation that accepts a single input argument and returns no result.
+   */
+  public interface Consumer<T> {
+
+    /**
+     * Performs this operation on the given argument.
+     * @param t the input argument
+     */
+    void accept(T t);
+  }
+
+  /**
+   * A lambda-friendly way to attach a callback to a {@link ListenableFuture}. The callback will
+   * only be run if the future completes successfully.
+   * @param future a ListenableFuture to attach the callback to.
+   * @param consumer a consumer, to be called with the result of the successful future.
+   */
+  public static <T> void addSuccessCallback(
+      ListenableFuture<T> future,
+      final Consumer<? super T> consumer) {
+    Futures.addCallback(future, new FutureCallback<T>() {
+      @Override
+      public void onSuccess(T result) {
+        consumer.accept(result);
+      }
+
+      @Override
+      public void onFailure(Throwable t) {
+        // ignore
+      }
+    });
+  }
+
+  /**
+   * A lambda-friendly way to attach a callback to a {@link ListenableFuture}. The callback will
+   * only be run if the future fails.
+   * @param future a ListenableFuture to attach the callback to.
+   * @param consumer a consumer, to be called with the result of the failed future.
+   */
+  public static <T> void addFailureCallback(
+      ListenableFuture<T> future,
+      final Consumer<Throwable> consumer) {
+    Futures.addCallback(future, new FutureCallback<T>() {
+      @Override
+      public void onSuccess(T result) {
+        // ignore
+      }
+
+      @Override
+      public void onFailure(Throwable t) {
+        consumer.accept(t);
+      }
+    });
+  }
+
+  /**
    * Transform the input futures into a single future, using the provided
    * transform function. The transformation follows the same semantics as as
    * {@link Futures#transform(ListenableFuture, Function)} and the input

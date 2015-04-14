@@ -21,6 +21,7 @@ import com.google.common.util.concurrent.AsyncFunction;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
+
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -263,6 +264,68 @@ public class FuturesExtraTest {
         throw new RuntimeException("value too low");
       }
     }
+  }
+
+  @Test
+  public void testSuccessCallback() throws Exception {
+    final SettableFuture<Long> future = SettableFuture.create();
+    final SettableFuture<Long> value = SettableFuture.create();
+
+    FuturesExtra.addSuccessCallback(future, new FuturesExtra.Consumer<Long>() {
+      @Override
+      public void accept(Long l) {
+        value.set(l);
+      }
+    });
+
+    final long expected = 10l;
+    future.set(expected);
+    assertEquals(expected, (long)value.get());
+  }
+
+  @Test
+  public void testSuccessCallbackFailure() throws Exception {
+    final SettableFuture<Long> future = SettableFuture.create();
+
+    FuturesExtra.addSuccessCallback(future, new FuturesExtra.Consumer<Long>() {
+      @Override
+      public void accept(Long l) {
+        fail("shouldn't be called");
+      }
+    });
+
+    future.setException(new RuntimeException("boom"));
+  }
+
+  @Test
+  public void testFailureCallback() throws Exception {
+    final SettableFuture<Long> future = SettableFuture.create();
+    final SettableFuture<Throwable> value = SettableFuture.create();
+
+    FuturesExtra.addFailureCallback(future, new FuturesExtra.Consumer<Throwable>() {
+      @Override
+      public void accept(Throwable e) {
+        value.set(e);
+      }
+    });
+
+    final Throwable expected = new RuntimeException("boom");
+    future.setException(expected);
+    assertEquals(expected, value.get());
+  }
+
+  @Test
+  public void testFailureCallbackSuccess() throws Exception {
+    final SettableFuture<Long> future = SettableFuture.create();
+
+    FuturesExtra.addFailureCallback(future, new FuturesExtra.Consumer<Throwable>() {
+      @Override
+      public void accept(Throwable e) {
+        fail("shouldn't be called");
+      }
+    });
+
+    future.set(42l);
   }
 
   @Test
