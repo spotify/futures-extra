@@ -13,8 +13,12 @@ Guava's ListenableFuture class
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.spotify/futures-extra/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.spotify/futures-extra)
 
 ### Build dependencies
-* Java 6 or higher
+* Java 8 or higher
 * Maven
+
+### Runtime dependencies
+* Java 6 or higher
+* Guava 18.0 or higher
 
 ### Usage
 

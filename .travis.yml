@@ -7,14 +7,23 @@ language: java
 
 jdk:
   - oraclejdk8
-  - oraclejdk7
-  - openjdk7
-  - openjdk6
 
 install:
   - mvn install -DskipTests=true -Dgpg.skip=true
 
+# Build using JDK 8 and then run tests for 8, 7 and 6.
+script:
+  - jdk_switcher use oraclejdk8
+  - mvn test
+  - jdk_switcher use oraclejdk7
+  - mvn test
+  - jdk_switcher use openjdk7
+  - mvn test
+  - jdk_switcher use openjdk6
+  - mvn test
+
 after_success:
+  - jdk_switcher use oraclejdk8
   - mvn clean cobertura:cobertura coveralls:report -Dcoveralls.token=${COVERALLS_TOKEN}
 
 sudo: false
