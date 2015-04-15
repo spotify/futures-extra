@@ -16,6 +16,7 @@
 package com.spotify.futures;
 
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.AsyncFunction;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -29,8 +30,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static java.util.Objects.requireNonNull;
 
 /**
  * Static utility methods pertaining to the {@link ListenableFuture} interface.
@@ -130,7 +129,7 @@ public class FuturesExtra {
    * @throws NullPointerException if the {@param futures} is null
    */
   public static <T> ListenableFuture<T> select(final List<ListenableFuture<T>> futures) {
-    requireNonNull(futures);
+    Preconditions.checkNotNull(futures);
     if (futures.isEmpty()) {
       return Futures.immediateFailedFuture(new NoSuchElementException("List is empty"));
     }
