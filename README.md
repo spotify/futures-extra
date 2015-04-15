@@ -169,3 +169,19 @@ FuturesExtra.addSuccessCallback(future, a -> System.out.println(a));
 final ListenableFuture<B> future = getFuture();
 FuturesExtra.addFailureCallback(future, e -> e.printStackTrace());
 ```
+
+#### JDK 8 CompletableFuture <-> ListenableFuture Conversion
+
+* From `ListenableFuture` To JDK 8 `CompletableFuture`
+
+```java
+ListenableFuture<V> listenable = getFuture();
+CompletableFuture<V> completable = CompletableFuturesExtra.toCompletableFuture(listenable);
+```
+
+* From JDK 8 `CompletableFuture` To `ListenableFuture`
+
+```java
+CompletableFuture<V> completable = getFuture();
+ListenableFuture<V> listenable = CompletableFuturesExtra.toListenableFuture(completable);
+```
