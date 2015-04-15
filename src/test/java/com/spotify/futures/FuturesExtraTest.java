@@ -21,6 +21,7 @@ import com.google.common.util.concurrent.AsyncFunction;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
+import com.spotify.futures.FuturesExtra.Consumer;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -33,6 +34,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 public class FuturesExtraTest {
   @Test
@@ -263,6 +269,51 @@ public class FuturesExtraTest {
         throw new RuntimeException("value too low");
       }
     }
+  }
+
+  @Test
+  public void testSuccessCallback() throws Exception {
+    final SettableFuture<Integer> future = SettableFuture.create();
+    final Consumer<Integer> consumer = mock(Consumer.class);
+
+    FuturesExtra.addSuccessCallback(future, consumer);
+
+    future.set(10);
+    verify(consumer).accept(10);
+  }
+
+  @Test
+  public void testSuccessCallbackFailure() throws Exception {
+    final SettableFuture<Integer> future = SettableFuture.create();
+    final Consumer<Integer> consumer = mock(Consumer.class);
+
+    FuturesExtra.addSuccessCallback(future, consumer);
+
+    future.setException(new RuntimeException("boom"));
+    verify(consumer, never()).accept(anyInt());
+  }
+
+  @Test
+  public void testFailureCallback() throws Exception {
+    final SettableFuture<Integer> future = SettableFuture.create();
+    final Consumer<Throwable> consumer = mock(Consumer.class);
+
+    FuturesExtra.addFailureCallback(future, consumer);
+
+    final Throwable expected = new RuntimeException("boom");
+    future.setException(expected);
+    verify(consumer).accept(expected);
+  }
+
+  @Test
+  public void testFailureCallbackSuccess() throws Exception {
+    final SettableFuture<Long> future = SettableFuture.create();
+    final Consumer<Throwable> consumer = mock(Consumer.class);
+
+    FuturesExtra.addFailureCallback(future, consumer);
+
+    future.set(42l);
+    verify(consumer, never()).accept(any(Throwable.class));
   }
 
   @Test

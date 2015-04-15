@@ -152,3 +152,16 @@ final List<ListenableFuture<A>> futures = getFutures();
 final ListenableFuture<A> firstSuccessful = FuturesExtra.select(futures);
 ```
 
+#### Success/Failure callbacks
+
+If you are only interested in either successful or failed results of a future,
+you can use these callbacks:
+```java
+final ListenableFuture<A> future = getFuture();
+FuturesExtra.addSuccessCallback(future, a -> System.out.println(a));
+```
+
+```java
+final ListenableFuture<B> future = getFuture();
+FuturesExtra.addFailureCallback(future, e -> e.printStackTrace());
+```
