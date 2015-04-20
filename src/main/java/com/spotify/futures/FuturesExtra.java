@@ -616,12 +616,12 @@ public class FuturesExtra {
   }
 
   public static <I, O> ListenableFuture<O> syncTransform(
-          ListenableFuture<I> input, Function<? extends I, ? super O> function) {
-    return Futures.transform(input, (Function<? super I, ? extends O>) function);
+          ListenableFuture<I> input, Function<? super I, ? extends O> function) {
+    return Futures.transform(input, function);
   }
 
   public static <I, O> ListenableFuture<O> asyncTransform(
-          ListenableFuture<I> input, AsyncFunction<? extends I, ? super O> function) {
-    return Futures.transform(input, (AsyncFunction<? super I, ? extends O>) function);
+          ListenableFuture<I> input, AsyncFunction<? super I, ? extends O> function) {
+    return Futures.transform(input, function);
   }
 }
