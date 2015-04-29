@@ -32,6 +32,7 @@ import static com.google.common.util.concurrent.Uninterruptibles.getUninterrupti
 import static com.spotify.futures.FuturesExtra.fastFail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
@@ -570,5 +571,79 @@ public class FuturesExtraTest {
               }
             });
     future.get();
+  }
+
+  @Test
+  public void testWaitForNoInputs() throws Exception {
+    final ListenableFuture<String> future = Futures.immediateFuture("hello");
+    final ListenableFuture<String> result = FuturesExtra.waitFor(future);
+    assertSame(future, result);
+    assertTrue(result.isDone());
+
+  }
+
+  @Test
+  public void testWaitForOneInput() throws Exception {
+    final ListenableFuture<String> future = Futures.immediateFuture("hello");
+    final ListenableFuture<String> other1 = Futures.immediateFuture("other1");
+    final ListenableFuture<String> result = FuturesExtra.waitFor(future, other1);
+
+    assertTrue(result.isDone());
+    assertEquals("hello", result.get());
+
+  }
+
+  @Test
+  public void testWaitForTwoInputs() throws Exception {
+    final ListenableFuture<String> future = Futures.immediateFuture("hello");
+    final ListenableFuture<String> other1 = Futures.immediateFuture("other1");
+    final ListenableFuture<String> other2 = Futures.immediateFuture("other2");
+    final ListenableFuture<String> result = FuturesExtra.waitFor(future, other1, other2);
+
+    assertTrue(result.isDone());
+    assertEquals("hello", result.get());
+
+  }
+
+  @Test
+  public void testWaitForTwoInputsOneFailure() throws Exception {
+    final ListenableFuture<String> future = Futures.immediateFuture("hello");
+    final ListenableFuture<String> other1 = Futures.immediateFuture("other1");
+    final ListenableFuture<String> other2 = Futures.immediateFailedFuture(new RuntimeException());
+    final ListenableFuture<String> other3 = Futures.immediateFuture("other2");
+    final ListenableFuture<String> result = FuturesExtra.waitFor(future, other1, other2, other3);
+
+    assertTrue(result.isDone());
+    assertEquals("hello", result.get());
+
+  }
+
+  @Test
+  public void testWaitForNotImmediate() throws Exception {
+    final ListenableFuture<String> future = Futures.immediateFuture("hello");
+    final ListenableFuture<String> other1 = Futures.immediateFuture("other1");
+    final ListenableFuture<String> other2 = Futures.immediateFailedFuture(new RuntimeException());
+    final SettableFuture<String> other3 = SettableFuture.create();
+    final ListenableFuture<String> result = FuturesExtra.waitFor(future, other1, other2, other3);
+
+    assertFalse(result.isDone());
+    other3.set("foo");
+    assertTrue(result.isDone());
+    assertEquals("hello", result.get());
+
+  }
+
+  @Test(expected = ExecutionException.class)
+  public void testWaitForNotImmediateWithFailure() throws Exception {
+    final ListenableFuture<String> future = Futures.immediateFailedFuture(new IllegalArgumentException());
+    final ListenableFuture<String> other1 = Futures.immediateFuture("other1");
+    final ListenableFuture<String> other2 = Futures.immediateFailedFuture(new RuntimeException());
+    final SettableFuture<String> other3 = SettableFuture.create();
+    final ListenableFuture<String> result = FuturesExtra.waitFor(future, other1, other2, other3);
+
+    assertFalse(result.isDone());
+    other3.set("foo");
+    assertTrue(result.isDone());
+    result.get();
   }
 }

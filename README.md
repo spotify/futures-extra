@@ -170,6 +170,20 @@ final ListenableFuture<B> future = getFuture();
 FuturesExtra.addFailureCallback(future, e -> e.printStackTrace());
 ```
 
+#### Waiting for multiple futures
+
+Sometimes you want to depend on a single future, but for timing reasons it's useful to
+wait for other futures to complete. You can use this method for that:
+```java
+final ListenableFuture<String> future = Futures.immediateFuture("hello");
+final ListenableFuture<String> other1 = Futures.immediateFuture("other1");
+final ListenableFuture<String> other2 = Futures.immediateFuture("other2");
+final ListenableFuture<String> result = FuturesExtra.waitFor(future, other1, other2);
+
+assertTrue(result.isDone());
+assertEquals("hello", result.get());
+```
+
 #### JDK 8 CompletableFuture <-> ListenableFuture Conversion
 
 * From `ListenableFuture` To JDK 8 `CompletableFuture`
