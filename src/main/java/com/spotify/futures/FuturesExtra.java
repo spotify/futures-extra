@@ -17,10 +17,12 @@ package com.spotify.futures;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.AsyncFunction;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 
 import java.util.Arrays;
@@ -623,5 +625,69 @@ public class FuturesExtra {
   public static <I, O> ListenableFuture<O> asyncTransform(
           ListenableFuture<I> input, AsyncFunction<? super I, ? extends O> function) {
     return Futures.transform(input, function);
+  }
+
+  /**
+   * Returns a future that waits for all the input futures to complete (even if they are failing)
+   * and then returns the same value as the first input future
+   * @param future future whose value (or error) is propagated to the result.
+   * @param others futures that we wait for but ignore the values or errors of.
+   * @param <T>
+   * @return a future that is functionally equivalent to the first input, but may be delay.
+   */
+  public static <T> ListenableFuture<T> waitFor(
+          final ListenableFuture<T> future, final ListenableFuture<?>... others) {
+    Preconditions.checkNotNull(future);
+    Preconditions.checkNotNull(others);
+    if (others.length == 0) {
+      return future;
+    }
+
+    final CountdownFuture<T> countdownFuture = new CountdownFuture<T>(others.length + 1);
+
+    Futures.addCallback(future, new FutureCallback<T>() {
+      @Override
+      public void onSuccess(T result) {
+        countdownFuture.value = result;
+        countdownFuture.countdown();
+      }
+
+      @Override
+      public void onFailure(Throwable t) {
+        countdownFuture.throwable = t;
+        countdownFuture.countdown();
+      }
+    });
+
+    final Runnable listener = new Runnable() {
+      @Override
+      public void run() {
+        countdownFuture.countdown();
+      }
+    };
+    for (ListenableFuture<?> other : others) {
+      other.addListener(listener, MoreExecutors.sameThreadExecutor());
+    }
+    return countdownFuture;
+  }
+
+  private static class CountdownFuture<T> extends AbstractFuture<T> {
+    private volatile Throwable throwable;
+    private volatile T value;
+    private final AtomicInteger countdown;
+
+    public CountdownFuture(int size) {
+      countdown = new AtomicInteger(size);
+    }
+
+    private void countdown() {
+      if (countdown.decrementAndGet() == 0) {
+        if (throwable != null) {
+          setException(throwable);
+        } else {
+          set(value);
+        }
+      }
+    }
   }
 }
