@@ -22,10 +22,12 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
+import com.google.common.util.concurrent.Uninterruptibles;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -623,5 +625,46 @@ public class FuturesExtra {
   public static <I, O> ListenableFuture<O> asyncTransform(
           ListenableFuture<I> input, AsyncFunction<? super I, ? extends O> function) {
     return Futures.transform(input, function);
+  }
+
+  /**
+   * check that a future is completed.
+   * @param future the future.
+   * @throws IllegalStateException if the future is not completed.
+   */
+  public static void checkCompleted(ListenableFuture<?> future) {
+    if (!future.isDone()) {
+      throw new IllegalStateException("future was not completed");
+    }
+  }
+
+  /**
+   * Get the value of a completed future.
+   *
+   * @param future a completed future.
+   * @return the value of the future if it has one.
+   * @throws IllegalStateException if the future is not completed.
+   * @throws com.google.common.util.concurrent.UncheckedExecutionException if the future has failed
+   */
+  public static <T> T getCompleted(ListenableFuture<T> future) {
+    checkCompleted(future);
+    return Futures.getUnchecked(future);
+  }
+
+  /**
+   * Get the exception of a completed future.
+   *
+   * @param future a completed future.
+   * @return the exception of a future or null if no exception was thrown
+   * @throws IllegalStateException if the future is not completed.
+   */
+  public static Throwable getException(ListenableFuture<?> future) {
+    checkCompleted(future);
+    try {
+      Uninterruptibles.getUninterruptibly(future);
+      return null;
+    } catch (ExecutionException e) {
+      return e.getCause();
+    }
   }
 }
