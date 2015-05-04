@@ -170,6 +170,27 @@ final ListenableFuture<B> future = getFuture();
 FuturesExtra.addFailureCallback(future, e -> e.printStackTrace());
 ```
 
+#### Completed futures
+
+In some cases you want to extract the value (or exception) from the future and you know that
+the future is completed so it won't be a blocking operation.
+
+You could use these methods for that, but they will also block if the future is not complete which may lead to
+hard to find bugs.
+```java
+T value = future.get();
+T value = Futures.getUnchecked(future);
+```
+
+Instead you can use these methods which will never block but instead immediately
+throw an exception if the future is not completed. This is typically useful in unit tests
+(where futures should be immediate) and in general future callbacks/transforms where you know that a
+specific future must be completed for this codepath to be triggered.
+```java
+T value = FuturesExtra.getCompleted(future);
+Throwable exc = FuturesExtra.getException(future);
+```
+
 #### JDK 8 CompletableFuture <-> ListenableFuture Conversion
 
 * From `ListenableFuture` To JDK 8 `CompletableFuture`

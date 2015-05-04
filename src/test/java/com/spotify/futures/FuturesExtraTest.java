@@ -21,6 +21,7 @@ import com.google.common.util.concurrent.AsyncFunction;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.spotify.futures.FuturesExtra.Consumer;
 import org.junit.Test;
 
@@ -570,5 +571,47 @@ public class FuturesExtraTest {
               }
             });
     future.get();
+  }
+
+  @Test
+  public void testCheckCompleted() throws Exception {
+    FuturesExtra.checkCompleted(Futures.immediateFuture("hello"));
+    FuturesExtra.checkCompleted(Futures.immediateFailedFuture(new RuntimeException()));
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void testCheckCompletedFails() throws Exception {
+    FuturesExtra.checkCompleted(SettableFuture.create());
+  }
+
+  @Test
+  public void testGetCompleted() throws Exception {
+    assertEquals("hello", FuturesExtra.getCompleted(Futures.immediateFuture("hello")));
+  }
+
+  @Test(expected = UncheckedExecutionException.class)
+  public void testGetCompletedThrows() throws Exception {
+    FuturesExtra.getCompleted(Futures.immediateFailedFuture(new ArrayIndexOutOfBoundsException()));
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void testGetCompletedNotComplete() throws Exception {
+    FuturesExtra.getCompleted(SettableFuture.create());
+  }
+
+  @Test
+  public void testGetException() throws Exception {
+    assertEquals(null, FuturesExtra.getException(Futures.immediateFuture("hello")));
+  }
+
+  @Test
+  public void testGetExceptionThrows() throws Exception {
+    ArrayIndexOutOfBoundsException t = new ArrayIndexOutOfBoundsException();
+    assertEquals(t, FuturesExtra.getException(Futures.immediateFailedFuture(t)));
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void testExceptiondNotComplete() throws Exception {
+    FuturesExtra.getException(SettableFuture.create());
   }
 }
