@@ -172,25 +172,44 @@ public class FuturesExtra {
   }
 
   /**
+   * A lambda-friendly way to attach callbacks to a {@link ListenableFuture}. The success
+   * callback will only be run if the future completes successfully, and failure will
+   * only be run if the future fails.
+   * @param future a ListenableFuture to attach the callbacks to.
+   * @param success a consumer, to be called with the result of the successful future.
+   * @param failure a consumer, to be called with the result of the failed future.
+   */
+  public static <T> void addCallback(
+          final ListenableFuture<T> future,
+          final Consumer<? super T> success,
+          final Consumer<Throwable> failure) {
+    Futures.addCallback(future, new FutureCallback<T>() {
+      @Override
+      public void onSuccess(final T result) {
+        if (success != null) {
+          success.accept(result);
+        }
+      }
+
+      @Override
+      public void onFailure(final Throwable throwable) {
+        if (failure != null) {
+          failure.accept(throwable);
+        }
+      }
+    });
+  }
+
+  /**
    * A lambda-friendly way to attach a callback to a {@link ListenableFuture}. The callback will
    * only be run if the future completes successfully.
    * @param future a ListenableFuture to attach the callback to.
    * @param consumer a consumer, to be called with the result of the successful future.
    */
   public static <T> void addSuccessCallback(
-      ListenableFuture<T> future,
-      final Consumer<? super T> consumer) {
-    Futures.addCallback(future, new FutureCallback<T>() {
-      @Override
-      public void onSuccess(T result) {
-        consumer.accept(result);
-      }
-
-      @Override
-      public void onFailure(Throwable t) {
-        // ignore
-      }
-    });
+          ListenableFuture<T> future,
+          final Consumer<? super T> consumer) {
+    addCallback(future, consumer, null);
   }
 
   /**
@@ -200,19 +219,9 @@ public class FuturesExtra {
    * @param consumer a consumer, to be called with the result of the failed future.
    */
   public static <T> void addFailureCallback(
-      ListenableFuture<T> future,
-      final Consumer<Throwable> consumer) {
-    Futures.addCallback(future, new FutureCallback<T>() {
-      @Override
-      public void onSuccess(T result) {
-        // ignore
-      }
-
-      @Override
-      public void onFailure(Throwable t) {
-        consumer.accept(t);
-      }
-    });
+          ListenableFuture<T> future,
+          final Consumer<Throwable> consumer) {
+    addCallback(future, null, consumer);
   }
 
   /**

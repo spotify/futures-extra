@@ -273,6 +273,33 @@ public class FuturesExtraTest {
   }
 
   @Test
+  public void testCallbackForSuccess() throws Exception {
+    final SettableFuture<Integer> future = SettableFuture.create();
+    final Consumer<Integer> success = mock(Consumer.class);
+    final Consumer<Throwable> failure = mock(Consumer.class);
+
+    FuturesExtra.addCallback(future, success, failure);
+
+    future.set(10);
+    verify(success).accept(10);
+    verify(failure, never()).accept(any(Throwable.class));
+  }
+
+  @Test
+  public void testCallbackForFailure() throws Exception {
+    final SettableFuture<Integer> future = SettableFuture.create();
+    final Consumer<Integer> success = mock(Consumer.class);
+    final Consumer<Throwable> failure = mock(Consumer.class);
+
+    FuturesExtra.addCallback(future, success, failure);
+
+    final Throwable expected = new RuntimeException("boom");
+    future.setException(expected);
+    verify(failure).accept(expected);
+    verify(success, never()).accept(anyInt());
+  }
+
+  @Test
   public void testSuccessCallback() throws Exception {
     final SettableFuture<Integer> future = SettableFuture.create();
     final Consumer<Integer> consumer = mock(Consumer.class);
