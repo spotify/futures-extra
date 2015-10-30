@@ -161,7 +161,7 @@ final ListenableFuture<A> firstSuccessful = FuturesExtra.select(futures);
 You can attach callbacks that are run depending on the results of a future:
 ```java
 final ListenableFuture<A> future = getFuture();
-FuturesExtra.addCallback(future, a -> System.out.println(a), e -> e.printStackTrace());
+FuturesExtra.addCallback(future, System.out::println, Throwable::printStackTrace);
 ```
 
 
@@ -169,12 +169,12 @@ Alternatively, if you are only interested in either successful or failed
 results of a future, you can use:
 ```java
 final ListenableFuture<A> future = getFuture();
-FuturesExtra.addSuccessCallback(future, a -> System.out.println(a));
+FuturesExtra.addSuccessCallback(future, System.out::println);
 ```
 
 ```java
 final ListenableFuture<B> future = getFuture();
-FuturesExtra.addFailureCallback(future, e -> e.printStackTrace());
+FuturesExtra.addFailureCallback(future, System.out::println);
 ```
 
 #### Completed futures

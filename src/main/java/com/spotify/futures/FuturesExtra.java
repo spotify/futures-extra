@@ -183,6 +183,9 @@ public class FuturesExtra {
           final ListenableFuture<T> future,
           final Consumer<? super T> success,
           final Consumer<Throwable> failure) {
+    if (success == null && failure == null) {
+      throw new NullPointerException();
+    }
     Futures.addCallback(future, new FutureCallback<T>() {
       @Override
       public void onSuccess(final T result) {
