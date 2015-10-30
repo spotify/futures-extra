@@ -286,6 +286,17 @@ public class FuturesExtraTest {
   }
 
   @Test
+  public void testCallbackForSuccessNullFailure() throws Exception {
+    final SettableFuture<Integer> future = SettableFuture.create();
+    final Consumer<Integer> success = mock(Consumer.class);
+
+    FuturesExtra.addCallback(future, success, null);
+
+    future.set(10);
+    verify(success).accept(10);
+  }
+
+  @Test
   public void testCallbackForFailure() throws Exception {
     final SettableFuture<Integer> future = SettableFuture.create();
     final Consumer<Integer> success = mock(Consumer.class);
@@ -297,6 +308,24 @@ public class FuturesExtraTest {
     future.setException(expected);
     verify(failure).accept(expected);
     verify(success, never()).accept(anyInt());
+  }
+
+  @Test
+  public void testCallbackForFailureNullSuccess() throws Exception {
+    final SettableFuture<Integer> future = SettableFuture.create();
+    final Consumer<Throwable> failure = mock(Consumer.class);
+
+    FuturesExtra.addCallback(future, null, failure);
+
+    final Throwable expected = new RuntimeException("boom");
+    future.setException(expected);
+    verify(failure).accept(expected);
+  }
+
+  @Test(expected = NullPointerException.class)
+  public void testCallbackWithNulls() throws Exception {
+    final SettableFuture<Integer> future = SettableFuture.create();
+    FuturesExtra.addCallback(future, null, null);
   }
 
   @Test
