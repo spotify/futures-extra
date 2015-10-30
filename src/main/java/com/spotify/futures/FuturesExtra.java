@@ -178,6 +178,7 @@ public class FuturesExtra {
    * @param future a ListenableFuture to attach the callbacks to.
    * @param success a consumer, to be called with the result of the successful future.
    * @param failure a consumer, to be called with the result of the failed future.
+   * @throws NullPointerException if the {@param success} and {@param failure} are null
    */
   public static <T> void addCallback(
           final ListenableFuture<T> future,
