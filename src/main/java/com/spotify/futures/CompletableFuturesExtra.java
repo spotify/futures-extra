@@ -18,6 +18,7 @@ package com.spotify.futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 public class CompletableFuturesExtra {
 
@@ -50,6 +51,18 @@ public class CompletableFuturesExtra {
    */
   public static <V> ListenableFuture<V> toListenableFuture(
       CompletableFuture<V> future) {
+    return toListenableFuture((CompletionStage<V>) future);
+  }
+
+  /**
+   * Wrap a {@link CompletionStage} in a {@link ListenableFuture}. The returned future will
+   * complete with the same result or failure as the original future.
+   *
+   * @param future The {@link CompletionStage} to wrap in a {@link ListenableFuture}.
+   * @return A {@link ListenableFuture} that completes when the original future completes.
+   */
+  public static <V> ListenableFuture<V> toListenableFuture(
+      CompletionStage<V> future) {
     if (future instanceof ListenableToCompletableFutureWrapper) {
       return ((ListenableToCompletableFutureWrapper<V>) future).unwrap();
     }
