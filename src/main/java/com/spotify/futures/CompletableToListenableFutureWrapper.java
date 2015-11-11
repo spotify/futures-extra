@@ -19,21 +19,22 @@ import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.function.BiConsumer;
 
 class CompletableToListenableFutureWrapper<V>
     extends AbstractFuture<V>
     implements ListenableFuture<V>, BiConsumer<V, Throwable> {
 
-  private final CompletableFuture<V> future;
+  private final CompletionStage<V> future;
 
-  CompletableToListenableFutureWrapper(final CompletableFuture<V> future) {
+  CompletableToListenableFutureWrapper(final CompletionStage<V> future) {
     this.future = future;
     future.whenComplete(this);
   }
 
   public CompletableFuture<V> unwrap() {
-    return future;
+    return future.toCompletableFuture();
   }
 
   @Override

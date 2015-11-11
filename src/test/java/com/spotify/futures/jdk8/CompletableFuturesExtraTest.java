@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.function.BiConsumer;
 
@@ -45,6 +46,13 @@ public class CompletableFuturesExtraTest {
   @Test
   public void testToCompletableFutureUnwrap() {
     final CompletableFuture<String> wrapped = toCompletableFuture(listenable);
+    final ListenableFuture<String> unwrapped = toListenableFuture(wrapped);
+    assertThat(unwrapped, is(sameInstance(listenable)));
+  }
+
+  @Test
+  public void testToCompletableFutureUnwrapWithStage() {
+    final CompletionStage<String> wrapped = toCompletableFuture(listenable);
     final ListenableFuture<String> unwrapped = toListenableFuture(wrapped);
     assertThat(unwrapped, is(sameInstance(listenable)));
   }
