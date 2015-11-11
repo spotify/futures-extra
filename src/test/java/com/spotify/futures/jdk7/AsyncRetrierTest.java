@@ -14,11 +14,14 @@
  * the License.
  */
 
-package com.spotify.futures;
+package com.spotify.futures.jdk7;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
 import com.google.common.util.concurrent.ListenableFuture;
+
+import com.spotify.futures.AsyncRetrier;
+
 import org.jmock.lib.concurrent.DeterministicScheduler;
 import org.junit.Before;
 import org.junit.Test;

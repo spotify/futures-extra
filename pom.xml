@@ -16,18 +16,20 @@
     <profile>
       <id>jdk7</id>
       <activation>
-        <jdk>[1.6,1.7)</jdk>
+        <jdk>[1.6,1.8)</jdk>
       </activation>
       <properties>
+        <junitincludes>**/jdk7/*Test.class</junitincludes>
         <javadocparam />
       </properties>
     </profile>
     <profile>
       <id>jdk8</id>
       <activation>
-        <jdk>1.8</jdk>
+        <jdk>[1.8,)</jdk>
       </activation>
       <properties>
+        <junitincludes>**/*Test.class</junitincludes>
         <javadocparam>-Xdoclint:none</javadocparam>
       </properties>
     </profile>
@@ -95,7 +97,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.11</version>
+      <version>4.12</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -160,6 +162,16 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.19</version>
+        <configuration>
+          <includes>
+            <include>${junitincludes}</include>
+          </includes>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
