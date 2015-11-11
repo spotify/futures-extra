@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.spotify.futures;
+package com.spotify.futures.jdk7;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
@@ -22,7 +22,11 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.UncheckedExecutionException;
+
+import com.spotify.futures.FuturesExtra;
 import com.spotify.futures.FuturesExtra.Consumer;
+import com.spotify.futures.Validator;
+
 import org.junit.Test;
 
 import java.util.Arrays;

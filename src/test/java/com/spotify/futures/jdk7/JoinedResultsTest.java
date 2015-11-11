@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.spotify.futures;
+package com.spotify.futures.jdk7;
 
 import static org.junit.Assert.assertEquals;
 
@@ -26,6 +26,9 @@ import org.junit.Test;
 
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+
+import com.spotify.futures.FuturesExtra;
+import com.spotify.futures.JoinedResults;
 
 public class JoinedResultsTest {
   @Test
