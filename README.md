@@ -28,7 +28,7 @@ To import it with maven, use this:
     <dependency>
       <groupId>com.spotify</groupId>
       <artifactId>futures-extra</artifactId>
-      <version>1.4.1</version>
+      <version>2.5.0</version>
     </dependency>
 
 ### Examples
