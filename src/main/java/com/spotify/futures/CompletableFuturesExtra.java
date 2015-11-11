@@ -87,7 +87,7 @@ public class CompletableFuturesExtra {
   }
 
   /**
-   * Returns a new CompletionStage that, when this stage completes
+   * Returns a new stage that, when this stage completes
    * either normally or exceptionally, is executed with this stage's
    * result and exception as arguments to the supplied function.
    *
@@ -101,19 +101,20 @@ public class CompletableFuturesExtra {
    * in that the function should return a {@link java.util.concurrent.CompletionStage} rather than
    * the value directly.
    *
+   * @param stage the {@link CompletionStage} to compose
    * @param fn the function to use to compute the value of the
-   * returned CompletionStage
+   * returned {@link CompletionStage}
    * @param <U> the function's return type
-   * @return the new CompletionStage
+   * @return the new {@link CompletionStage}
    */
   public static <T, U> CompletionStage<U> handleCompose(
-          CompletionStage<T> future,
+          CompletionStage<T> stage,
           BiFunction<? super T, Throwable, ? extends CompletionStage<U>> fn) {
-    return dereference(future.handle(fn));
+    return dereference(stage.handle(fn));
   }
 
   /**
-   * Returns a new CompletionStage that, when this stage completes
+   * Returns a new stage that, when this stage completes
    * exceptionally, is executed with this stage's exception as the
    * argument to the supplied function.  Otherwise, if this stage
    * completes normally, then the returned stage also completes
@@ -124,32 +125,21 @@ public class CompletableFuturesExtra {
    * in that the function should return a {@link java.util.concurrent.CompletionStage} rather than
    * the value directly.
    *
+   * @param stage the {@link CompletionStage} to compose
    * @param fn the function to use to compute the value of the
-   * returned CompletionStage if this CompletionStage completed
+   * returned {@link CompletionStage} if this stage completed
    * exceptionally
-   * @return the new CompletionStage
+   * @return the new {@link CompletionStage}
    */
   public static <T> CompletionStage<T> exceptionallyCompose(
-          CompletionStage<T> future,
+          CompletionStage<T> stage,
           Function<Throwable, ? extends CompletionStage<T>> fn) {
-    return dereference(wrap(future).exceptionally(fn));
-  }
-
-  /**
-   * This takes a stage of a stage of a value and returns a plain future of a value.
-   *
-   * @param future of a future of a value
-   * @return the completion stage of a value
-   */
-  public static <T> CompletionStage<T> dereference(
-          CompletionStage<? extends CompletionStage<T>> future) {
-    //noinspection unchecked
-    return future.thenCompose(Identity.INSTANCE);
+    return dereference(wrap(stage).exceptionally(fn));
   }
 
   /**
    * check that a stage is completed.
-   * @param stage the stage.
+   * @param stage a {@link CompletionStage}.
    * @throws IllegalStateException if the stage is not completed.
    */
   public static void checkCompleted(CompletionStage<?> stage) {
@@ -161,7 +151,7 @@ public class CompletableFuturesExtra {
   /**
    * Get the value of a completed stage.
    *
-   * @param stage a completed stage.
+   * @param stage a completed {@link CompletionStage}.
    * @return the value of the stage if it has one.
    * @throws IllegalStateException if the stage is not completed.
    * @throws com.google.common.util.concurrent.UncheckedExecutionException
@@ -178,6 +168,24 @@ public class CompletableFuturesExtra {
     }
   }
 
+  /**
+   * This takes a stage of a stage of a value and
+   * returns a plain stage of a value.
+   *
+   * @param stage a {@link CompletionStage} of a {@link CompletionStage} of a value
+   * @return the {@link CompletionStage} of the value
+   */
+  public static <T> CompletionStage<T> dereference(
+      CompletionStage<? extends CompletionStage<T>> stage) {
+    //noinspection unchecked
+    return stage.thenCompose(Identity.INSTANCE);
+  }
+
+  private static <T> CompletionStage<CompletionStage<T>> wrap(CompletionStage<T> future) {
+    //noinspection unchecked
+    return future.thenApply((Function<T, CompletionStage<T>>) WrapFunction.INSTANCE);
+  }
+
   private enum Identity implements Function {
     INSTANCE;
 
@@ -186,6 +194,7 @@ public class CompletableFuturesExtra {
       return o;
     }
   }
+
 
   private enum WrapFunction implements Function {
     INSTANCE;
@@ -196,8 +205,4 @@ public class CompletableFuturesExtra {
     }
   }
 
-  private static <T> CompletionStage<CompletionStage<T>> wrap(CompletionStage<T> future) {
-    //noinspection unchecked
-    return future.thenApply((Function<T, CompletionStage<T>>) WrapFunction.INSTANCE);
-  }
 }
