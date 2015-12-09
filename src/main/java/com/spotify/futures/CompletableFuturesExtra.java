@@ -142,7 +142,7 @@ public class CompletableFuturesExtra {
    * @param stage a {@link CompletionStage}.
    * @throws IllegalStateException if the stage is not completed.
    */
-  public static void checkCompleted(CompletionStage<?> stage) {
+  public static <T> void checkCompleted(CompletionStage<T> stage) {
     if (!stage.toCompletableFuture().isDone()) {
       throw new IllegalStateException("future was not completed");
     }
