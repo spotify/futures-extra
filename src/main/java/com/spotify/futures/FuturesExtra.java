@@ -606,7 +606,7 @@ public class FuturesExtra {
    * the join is accessed.</p>
    * @see #join(ListenableFuture...)
    */
-  public static ListenableFuture<JoinedResults> join(List<ListenableFuture<?>> inputs) {
+  public static <T> ListenableFuture<JoinedResults> join(List<ListenableFuture<T>> inputs) {
     return Futures.transform(Futures.allAsList(inputs), new JoinedResults.Transform(inputs));
   }
 
@@ -645,7 +645,7 @@ public class FuturesExtra {
    * @param future the future.
    * @throws IllegalStateException if the future is not completed.
    */
-  public static void checkCompleted(ListenableFuture<?> future) {
+  public static <T> void checkCompleted(ListenableFuture<T> future) {
     if (!future.isDone()) {
       throw new IllegalStateException("future was not completed");
     }
@@ -671,7 +671,7 @@ public class FuturesExtra {
    * @return the exception of a future or null if no exception was thrown
    * @throws IllegalStateException if the future is not completed.
    */
-  public static Throwable getException(ListenableFuture<?> future) {
+  public static <T> Throwable getException(ListenableFuture<T> future) {
     checkCompleted(future);
     try {
       Uninterruptibles.getUninterruptibly(future);

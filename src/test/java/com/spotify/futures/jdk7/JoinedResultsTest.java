@@ -49,7 +49,7 @@ public class JoinedResultsTest {
   public void testWithList() throws Exception {
     ListenableFuture<String> futureA = Futures.immediateFuture("a");
     ListenableFuture<String> futureB = Futures.immediateFuture("b");
-    List<ListenableFuture<?>> list = Arrays.<ListenableFuture<?>>asList(futureA, futureB);
+    List<ListenableFuture<String>> list = Arrays.asList(futureA, futureB);
     JoinedResults joined = FuturesExtra.join(list).get();
     assertEquals("a", joined.get(futureA));
     assertEquals("b", joined.get(futureB));
