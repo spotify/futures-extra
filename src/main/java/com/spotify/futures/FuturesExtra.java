@@ -130,7 +130,7 @@ public class FuturesExtra {
    * @return a new future with the result of the first completing future.
    * @throws NullPointerException if the {@param futures} is null
    */
-  public static <T> ListenableFuture<T> select(final List<ListenableFuture<T>> futures) {
+  public static <T> ListenableFuture<T> select(final List<? extends ListenableFuture<T>> futures) {
     Preconditions.checkNotNull(futures);
     if (futures.isEmpty()) {
       return Futures.immediateFailedFuture(new NoSuchElementException("List is empty"));
@@ -590,12 +590,12 @@ public class FuturesExtra {
     ListenableFuture<Z> apply(A a, B b, C c, D d, E e, F f) throws Exception;
   }
 
-  private static <Z> ListenableFuture<Z> transform(final List<ListenableFuture<?>> inputs,
+  private static <Z> ListenableFuture<Z> transform(final List<? extends ListenableFuture<?>> inputs,
                                                    final Function<List<Object>, Z> function) {
     return Futures.transform(Futures.allAsList(inputs), function);
   }
 
-  private static <Z> ListenableFuture<Z> transform(final List<ListenableFuture<?>> inputs,
+  private static <Z> ListenableFuture<Z> transform(final List<? extends ListenableFuture<?>> inputs,
                                                    final AsyncFunction<List<Object>, Z> function) {
     return Futures.transform(Futures.allAsList(inputs), function);
   }
@@ -606,7 +606,7 @@ public class FuturesExtra {
    * the join is accessed.</p>
    * @see #join(ListenableFuture...)
    */
-  public static <T> ListenableFuture<JoinedResults> join(List<ListenableFuture<T>> inputs) {
+  public static ListenableFuture<JoinedResults> join(List<? extends ListenableFuture<?>> inputs) {
     return Futures.transform(Futures.allAsList(inputs), new JoinedResults.Transform(inputs));
   }
 
@@ -626,7 +626,7 @@ public class FuturesExtra {
    * </pre>
    */
   public static ListenableFuture<JoinedResults> join(ListenableFuture<?>... inputs) {
-    List<ListenableFuture<?>> list = Arrays.asList(inputs);
+    List<? extends ListenableFuture<?>> list = Arrays.asList(inputs);
     return Futures.transform(Futures.allAsList(list), new JoinedResults.Transform(list));
   }
 

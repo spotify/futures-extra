@@ -53,9 +53,9 @@ public final class JoinedResults {
     return t;
   }
 
-  static class Transform<T> implements Function<List<Object>, JoinedResults> {
-    private final List<ListenableFuture<T>> futures;
-    public Transform(List<ListenableFuture<T>> list) {
+  static class Transform implements Function<List<Object>, JoinedResults> {
+    private final List<? extends ListenableFuture<?>> futures;
+    public Transform(List<? extends ListenableFuture<?>> list) {
       futures = ImmutableList.copyOf(list);
     }
 

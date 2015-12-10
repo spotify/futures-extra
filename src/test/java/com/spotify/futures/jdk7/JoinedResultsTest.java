@@ -16,6 +16,7 @@
 package com.spotify.futures.jdk7;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,6 +27,7 @@ import org.junit.Test;
 
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.SettableFuture;
 
 import com.spotify.futures.FuturesExtra;
 import com.spotify.futures.JoinedResults;
@@ -51,6 +53,24 @@ public class JoinedResultsTest {
     ListenableFuture<String> futureB = Futures.immediateFuture("b");
     List<ListenableFuture<String>> list = Arrays.asList(futureA, futureB);
     JoinedResults joined = FuturesExtra.join(list).get();
+    assertEquals("a", joined.get(futureA));
+    assertEquals("b", joined.get(futureB));
+  }
+
+  @Test
+  public void testWithListOfSpecific() throws Exception {
+    SettableFuture<String> futureA = SettableFuture.create();
+    SettableFuture<String> futureB = SettableFuture.create();
+    List<SettableFuture<String>> list = Arrays.asList(futureA, futureB);
+
+    final ListenableFuture<JoinedResults> joinFuture = FuturesExtra.join(list);
+    assertFalse(joinFuture.isDone());
+
+    futureA.set("a");
+    futureB.set("b");
+
+    JoinedResults joined = joinFuture.get();
+
     assertEquals("a", joined.get(futureA));
     assertEquals("b", joined.get(futureB));
   }
