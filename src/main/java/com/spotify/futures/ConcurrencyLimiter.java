@@ -70,6 +70,8 @@ public final class ConcurrencyLimiter<T> {
    * @param callable - a function that creates a future.
    * @returns a proxy future that completes with the future created by the
    *          input function.
+   * @throws {@link NullPointerException} if callable is null
+   * @throws {@link CapacityReachedException} when soft queue size limit is exceeded.
    */
   public ListenableFuture<T> add(Callable<? extends ListenableFuture<T>> callable) {
     Preconditions.checkNotNull(callable);
