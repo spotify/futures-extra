@@ -186,7 +186,8 @@ You use it like this:
 
 ```java
 int maxConcurrency = 10;
-ConcurrencyLimiter<T> limiter = ConcurrencyLimiter.create(maxConcurrency);
+int maxQueueSize = 100;
+ConcurrencyLimiter<T> limiter = ConcurrencyLimiter.create(maxConcurrency, maxQueueSize);
 for (int i = 0; i < 1000; i++) {
   ListenableFuture<T> future = limiter.add(() -> createFuture());
 }
@@ -200,9 +201,8 @@ The jobs you pass in should not be blocking or be overly CPU intensive.
 If that is something you need you should let your ConcurrencyLimiter jobs push
 the work on a thread pool.
 
-The internal queue is unbounded, so you have to manage fast-failing yourself.
-One idea is to look at the queue size (`limiter.numQueued()`) to decide if
-it's time to fast-fail.
+The internal queue is bounded and if its limit is reached it, the call to add will throw
+`ConcurrencyLimiter.CapacityReachedException`.
 
 #### Completed futures
 

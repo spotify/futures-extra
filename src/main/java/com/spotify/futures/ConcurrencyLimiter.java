@@ -25,6 +25,7 @@ import java.util.Queue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A ConcurrencyLimiter can be used for efficiently queueing up
@@ -37,17 +38,29 @@ public final class ConcurrencyLimiter<T> {
 
   private final Queue<Job<T>> queue;
   private final Semaphore limit;
+  private final AtomicInteger queueSize;
   private final int maxConcurrency;
+  private final int maxQueueSize;
 
-  private ConcurrencyLimiter(int maxConcurrency) {
+  private ConcurrencyLimiter(int maxConcurrency, int maxQueueSize) {
     this.maxConcurrency = maxConcurrency;
+    this.maxQueueSize = maxQueueSize;
     Preconditions.checkArgument(maxConcurrency > 0);
+    Preconditions.checkArgument(maxQueueSize > 0);
+    this.queueSize = new AtomicInteger();
     this.queue = new ConcurrentLinkedQueue<Job<T>>();
     this.limit = new Semaphore(maxConcurrency);
   }
 
-  public static <T> ConcurrencyLimiter<T> create(int maxConcurrency) {
-    return new ConcurrencyLimiter<T>(maxConcurrency);
+  /**
+   *
+   * @param maxConcurrency maximum number of futures in progress,
+   * @param maxQueueSize maximum number of jobs in queue. This is a soft bound and may be
+   *                     temporarily exceeded if add() is called concurrently.
+   * @return a new concurrency limiter
+   */
+  public static <T> ConcurrencyLimiter<T> create(int maxConcurrency, int maxQueueSize) {
+    return new ConcurrencyLimiter<T>(maxConcurrency, maxQueueSize);
   }
 
   /**
@@ -62,7 +75,11 @@ public final class ConcurrencyLimiter<T> {
     Preconditions.checkNotNull(callable);
     final SettableFuture<T> response = SettableFuture.create();
     final Job<T> job = new Job<T>(callable, response);
+    if (queueSize.get() >= maxQueueSize) {
+      throw new CapacityReachedException("Queue size has reached capacity: " + maxQueueSize);
+    }
     queue.add(job);
+    queueSize.incrementAndGet();
     pump();
     return response;
   }
@@ -72,7 +89,7 @@ public final class ConcurrencyLimiter<T> {
    *          yet.
    */
   public int numQueued() {
-    return queue.size();
+    return queueSize.get();
   }
 
   /**
@@ -93,6 +110,7 @@ public final class ConcurrencyLimiter<T> {
         limit.release();
         return;
       }
+      queueSize.decrementAndGet();
 
       final SettableFuture<T> response = job.response;
 
@@ -145,6 +163,13 @@ public final class ConcurrencyLimiter<T> {
     public Job(Callable<? extends ListenableFuture<T>> callable, SettableFuture<T> response) {
       this.callable = callable;
       this.response = response;
+    }
+  }
+
+  public static class CapacityReachedException extends RuntimeException {
+
+    public CapacityReachedException(String errorMessage) {
+      super(errorMessage);
     }
   }
 }

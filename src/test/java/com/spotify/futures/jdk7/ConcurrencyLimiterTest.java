@@ -36,19 +36,24 @@ import static org.junit.Assert.*;
 public class ConcurrencyLimiterTest {
 
   @Test(expected = IllegalArgumentException.class)
-  public void testTooLow() throws Exception {
-    ConcurrencyLimiter.create(0);
+  public void testTooLowConcurrency() throws Exception {
+    ConcurrencyLimiter.create(0, 10);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testTooLowQueueSize() throws Exception {
+    ConcurrencyLimiter.create(10, 0);
   }
 
   @Test(expected = NullPointerException.class)
   public void testNullJob() throws Exception {
-    final ConcurrencyLimiter<String> limiter = ConcurrencyLimiter.create(1);
+    final ConcurrencyLimiter<String> limiter = ConcurrencyLimiter.create(1, 10);
     limiter.add(null);
   }
 
   @Test
   public void testJobReturnsNull() throws Exception {
-    final ConcurrencyLimiter<String> limiter = ConcurrencyLimiter.create(1);
+    final ConcurrencyLimiter<String> limiter = ConcurrencyLimiter.create(1, 10);
     final ListenableFuture<String> response = limiter.add(job(null));
     assertTrue(response.isDone());
     final Throwable exception = FuturesExtra.getException(response);
@@ -57,7 +62,7 @@ public class ConcurrencyLimiterTest {
 
   @Test
   public void testJobThrows() throws Exception {
-    final ConcurrencyLimiter<String> limiter = ConcurrencyLimiter.create(1);
+    final ConcurrencyLimiter<String> limiter = ConcurrencyLimiter.create(1, 10);
     final ListenableFuture<String> response = limiter.add(new Callable<ListenableFuture<String>>() {
       @Override
       public ListenableFuture<String> call() throws Exception {
@@ -72,7 +77,7 @@ public class ConcurrencyLimiterTest {
 
   @Test
   public void testJobReturnsFailure() throws Exception {
-    final ConcurrencyLimiter<String> limiter = ConcurrencyLimiter.create(1);
+    final ConcurrencyLimiter<String> limiter = ConcurrencyLimiter.create(1, 10);
     final ListenableFuture<String> response = limiter.add(job(Futures.<String>immediateFailedFuture(new IllegalStateException())));
 
     assertTrue(response.isDone());
@@ -82,7 +87,7 @@ public class ConcurrencyLimiterTest {
 
   @Test
   public void testCancellation() throws Exception {
-    final ConcurrencyLimiter<String> limiter = ConcurrencyLimiter.create(2);
+    final ConcurrencyLimiter<String> limiter = ConcurrencyLimiter.create(2, 10);
     final SettableFuture<String> request1 = SettableFuture.create();
     final SettableFuture<String> request2 = SettableFuture.create();
 
@@ -129,7 +134,7 @@ public class ConcurrencyLimiterTest {
 
   @Test
   public void testSimple() throws Exception {
-    final ConcurrencyLimiter<String> limiter = ConcurrencyLimiter.create(2);
+    final ConcurrencyLimiter<String> limiter = ConcurrencyLimiter.create(2, 10);
     final SettableFuture<String> request1 = SettableFuture.create();
     final SettableFuture<String> request2 = SettableFuture.create();
     final SettableFuture<String> request3 = SettableFuture.create();
@@ -169,7 +174,7 @@ public class ConcurrencyLimiterTest {
   public void testLongRunning() throws Exception {
     final AtomicInteger activeCount = new AtomicInteger();
     final AtomicInteger maxCount = new AtomicInteger();
-    final ConcurrencyLimiter<String> limiter = ConcurrencyLimiter.create(10);
+    final ConcurrencyLimiter<String> limiter = ConcurrencyLimiter.create(10, 100000);
     List<CountingJob> jobs = Lists.newArrayList();
     List<ListenableFuture<String>> responses = Lists.newArrayList();
     for (int i = 0; i < 100000; i++) {
@@ -192,6 +197,39 @@ public class ConcurrencyLimiterTest {
     }
     assertEquals(10, maxCount.get());
     assertEquals(0, activeCount.get());
+    assertEquals(0, limiter.numActive());
+    assertEquals(0, limiter.numQueued());
+  }
+
+  @Test
+  public void testQueueSize() throws Exception {
+    final ConcurrencyLimiter<String> limiter = ConcurrencyLimiter.create(10, 10);
+    for (int i = 0; i < 20; i++) {
+      limiter.add(job(SettableFuture.<String>create()));
+    }
+
+    try {
+      limiter.add(job(SettableFuture.<String>create()));
+      fail();
+    } catch (Exception e) {
+      assertEquals(ConcurrencyLimiter.CapacityReachedException.class, e.getClass());
+    }
+  }
+
+  @Test
+  public void testQueueSizeCounter() throws Exception {
+    final SettableFuture<String> future = SettableFuture.create();
+
+    final ConcurrencyLimiter<String> limiter = ConcurrencyLimiter.create(10, 10);
+    for (int i = 0; i < 20; i++) {
+      limiter.add(job(future));
+    }
+
+    assertEquals(10, limiter.numActive());
+    assertEquals(10, limiter.numQueued());
+
+    future.set("");
+
     assertEquals(0, limiter.numActive());
     assertEquals(0, limiter.numQueued());
   }
