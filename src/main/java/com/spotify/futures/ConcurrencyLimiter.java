@@ -70,15 +70,17 @@ public final class ConcurrencyLimiter<T> {
    * @param callable - a function that creates a future.
    * @returns a proxy future that completes with the future created by the
    *          input function.
+   *          This future will be immediately failed with
+   *          {@link CapacityReachedException} if the soft queue size limit is exceeded.
    * @throws {@link NullPointerException} if callable is null
-   * @throws {@link CapacityReachedException} when soft queue size limit is exceeded.
    */
   public ListenableFuture<T> add(Callable<? extends ListenableFuture<T>> callable) {
     Preconditions.checkNotNull(callable);
     final SettableFuture<T> response = SettableFuture.create();
     final Job<T> job = new Job<T>(callable, response);
     if (queueSize.get() >= maxQueueSize) {
-      throw new CapacityReachedException("Queue size has reached capacity: " + maxQueueSize);
+      final String message = "Queue size has reached capacity: " + maxQueueSize;
+      return Futures.immediateFailedFuture(new CapacityReachedException(message));
     }
     queue.add(job);
     queueSize.incrementAndGet();

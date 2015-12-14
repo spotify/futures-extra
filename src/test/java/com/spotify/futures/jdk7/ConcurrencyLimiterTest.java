@@ -208,12 +208,10 @@ public class ConcurrencyLimiterTest {
       limiter.add(job(SettableFuture.<String>create()));
     }
 
-    try {
-      limiter.add(job(SettableFuture.<String>create()));
-      fail();
-    } catch (Exception e) {
-      assertEquals(ConcurrencyLimiter.CapacityReachedException.class, e.getClass());
-    }
+    final ListenableFuture<String> future = limiter.add(job(SettableFuture.<String>create()));
+    assertTrue(future.isDone());
+    final Throwable e = FuturesExtra.getException(future);
+    assertEquals(ConcurrencyLimiter.CapacityReachedException.class, e.getClass());
   }
 
   @Test

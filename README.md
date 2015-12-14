@@ -201,8 +201,8 @@ The jobs you pass in should not be blocking or be overly CPU intensive.
 If that is something you need you should let your ConcurrencyLimiter jobs push
 the work on a thread pool.
 
-The internal queue is bounded and if its limit is reached it, the call to add will throw
-`ConcurrencyLimiter.CapacityReachedException`.
+The internal queue is bounded and if its limit is reached it, the call to add will return
+a failed future of `ConcurrencyLimiter.CapacityReachedException`.
 
 #### Completed futures
 
