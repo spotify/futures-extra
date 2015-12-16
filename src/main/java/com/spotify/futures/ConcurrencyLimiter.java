@@ -133,28 +133,28 @@ public final class ConcurrencyLimiter<T> {
     try {
       future = callable.call();
       if (future == null) {
-        response.setException(new NullPointerException());
         limit.release();
+        response.setException(new NullPointerException());
         return;
       }
     } catch (Throwable e) {
-      response.setException(e);
       limit.release();
+      response.setException(e);
       return;
     }
 
     Futures.addCallback(future, new FutureCallback<T>() {
       @Override
       public void onSuccess(T result) {
-        response.set(result);
         limit.release();
+        response.set(result);
         pump();
       }
 
       @Override
       public void onFailure(Throwable t) {
-        response.setException(t);
         limit.release();
+        response.setException(t);
         pump();
       }
     });
