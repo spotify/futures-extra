@@ -177,6 +177,33 @@ final ListenableFuture<B> future = getFuture();
 FuturesExtra.addFailureCallback(future, System.out::println);
 ```
 
+#### Concurrency limiting
+
+If you want to fire of a large number of asynchronous requests or jobs,
+it can be useful to limit how many will run concurrently.
+To help with this, there is a new class called `ConcurrencyLimiter`.
+You use it like this:
+
+```java
+int maxConcurrency = 10;
+int maxQueueSize = 100;
+ConcurrencyLimiter<T> limiter = ConcurrencyLimiter.create(maxConcurrency, maxQueueSize);
+for (int i = 0; i < 1000; i++) {
+  ListenableFuture<T> future = limiter.add(() -> createFuture());
+}
+```
+The concurrency limiter will ensure that at most 10 futures are created and
+incomplete at the same time. All the jobs that are passed into
+`ConcurrencyLimiter.add()` will wait in a queue until the concurrency is below
+the limit.
+
+The jobs you pass in should not be blocking or be overly CPU intensive.
+If that is something you need you should let your ConcurrencyLimiter jobs push
+the work on a thread pool.
+
+The internal queue is bounded and if its limit is reached it, the call to add will return
+a failed future of `ConcurrencyLimiter.CapacityReachedException`.
+
 #### Completed futures
 
 In some cases you want to extract the value (or exception) from the future and you know that
