@@ -21,11 +21,10 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 
-import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A ConcurrencyLimiter can be used for efficiently queueing up
@@ -34,21 +33,20 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * This is a threadsafe class.
  */
-public final class ConcurrencyLimiter<T> {
+public final class ConcurrencyLimiter<T> implements FutureJobInvoker<T> {
 
-  private final Queue<Job<T>> queue;
+  private final BlockingQueue<Job<T>> queue;
   private final Semaphore limit;
-  private final AtomicInteger queueSize;
-  private final int maxConcurrency;
   private final int maxQueueSize;
+
+  private final int maxConcurrency;
 
   private ConcurrencyLimiter(int maxConcurrency, int maxQueueSize) {
     this.maxConcurrency = maxConcurrency;
     this.maxQueueSize = maxQueueSize;
     Preconditions.checkArgument(maxConcurrency > 0);
     Preconditions.checkArgument(maxQueueSize > 0);
-    this.queueSize = new AtomicInteger();
-    this.queue = new ConcurrentLinkedQueue<Job<T>>();
+    this.queue = new ArrayBlockingQueue<Job<T>>(maxQueueSize);
     this.limit = new Semaphore(maxConcurrency);
   }
 
@@ -74,16 +72,15 @@ public final class ConcurrencyLimiter<T> {
    *          {@link CapacityReachedException} if the soft queue size limit is exceeded.
    * @throws {@link NullPointerException} if callable is null
    */
+  @Override
   public ListenableFuture<T> add(Callable<? extends ListenableFuture<T>> callable) {
     Preconditions.checkNotNull(callable);
     final SettableFuture<T> response = SettableFuture.create();
     final Job<T> job = new Job<T>(callable, response);
-    if (queueSize.get() >= maxQueueSize) {
+    if (!queue.offer(job)) {
       final String message = "Queue size has reached capacity: " + maxQueueSize;
       return Futures.immediateFailedFuture(new CapacityReachedException(message));
     }
-    queue.add(job);
-    queueSize.incrementAndGet();
     pump();
     return response;
   }
@@ -93,7 +90,7 @@ public final class ConcurrencyLimiter<T> {
    *          yet.
    */
   public int numQueued() {
-    return queueSize.get();
+    return queue.size();
   }
 
   /**
@@ -101,6 +98,20 @@ public final class ConcurrencyLimiter<T> {
    */
   public int numActive() {
     return maxConcurrency - limit.availablePermits();
+  }
+
+  /**
+   * @returns the number of additional callables that can be queued before failing.
+   */
+  public int remainingQueueCapacity() {
+    return queue.remainingCapacity();
+  }
+
+  /**
+    * @returns the number of additional callables that can be run without queueing.
+    */
+  public int remainingActiveCapacity() {
+    return limit.availablePermits();
   }
 
   private void pump() {
@@ -114,7 +125,6 @@ public final class ConcurrencyLimiter<T> {
         limit.release();
         return;
       }
-      queueSize.decrementAndGet();
 
       final SettableFuture<T> response = job.response;
 
