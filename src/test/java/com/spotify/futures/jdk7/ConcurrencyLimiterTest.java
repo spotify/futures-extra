@@ -199,6 +199,8 @@ public class ConcurrencyLimiterTest {
     assertEquals(0, activeCount.get());
     assertEquals(0, limiter.numActive());
     assertEquals(0, limiter.numQueued());
+    assertEquals(10, limiter.remainingActiveCapacity());
+    assertEquals(100000, limiter.remainingQueueCapacity());
   }
 
   @Test
@@ -230,6 +232,8 @@ public class ConcurrencyLimiterTest {
 
     assertEquals(0, limiter.numActive());
     assertEquals(0, limiter.numQueued());
+    assertEquals(10, limiter.remainingActiveCapacity());
+    assertEquals(10, limiter.remainingQueueCapacity());
   }
 
   private Callable<ListenableFuture<String>> job(final ListenableFuture<String> future) {
