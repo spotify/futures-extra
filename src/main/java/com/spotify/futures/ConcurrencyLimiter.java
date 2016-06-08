@@ -123,7 +123,10 @@ public final class ConcurrencyLimiter<T> implements FutureJobInvoker<T> {
       final Job<T> job = queue.poll();
       if (job == null) {
         limit.release();
-        return;
+        if (queue.isEmpty()) {
+          return;
+        }
+        continue;
       }
 
       final SettableFuture<T> response = job.response;
