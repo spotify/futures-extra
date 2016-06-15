@@ -114,26 +114,37 @@ public final class ConcurrencyLimiter<T> implements FutureJobInvoker<T> {
     return limit.availablePermits();
   }
 
-  private void pump() {
-    while (true) {
+  /**
+   * Does one of two things:
+   * 1) return a job and acquire a permit from the semaphore
+   * 2) return null and does not acquire a permit from the semaphore
+   */
+  private Job<T> grabJob() {
+    while (!queue.isEmpty()) {
       if (!limit.tryAcquire()) {
-        return;
+        return null;
       }
 
       final Job<T> job = queue.poll();
-      if (job == null) {
-        limit.release();
-        return;
+      if (job != null) {
+        return job;
       }
 
+      limit.release();
+    }
+    return null;
+  }
+
+  private void pump() {
+    Job<T> job;
+    while ((job = grabJob()) != null) {
       final SettableFuture<T> response = job.response;
 
       if (response.isCancelled()) {
         limit.release();
-        continue;
+      } else {
+        invoke(response, job.callable);
       }
-
-      invoke(response, job.callable);
     }
   }
 
