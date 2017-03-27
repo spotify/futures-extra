@@ -18,7 +18,7 @@ Guava's ListenableFuture class
 
 ### Runtime dependencies
 * Java 6 or higher
-* Guava 18.0 or higher
+* Guava 20.0 or higher
 
 ### Usage
 
@@ -32,44 +32,6 @@ To import it with maven, use this:
     </dependency>
 
 ### Examples
-
-#### Cleaner transforms for Java 8.
-Java 8 introduced lambdas which can greatly reduce verbosity in code, which is
-great when using futures and transforms. One drawback with lambdas though is
-that when a lambda is supplied as an argument to a method with overloaded
-parameters, the compiler may fail to figure out which variant of a method call
-that is intended to be used.
-
-Ideally, applying java 8 lambdas to Guava's Futures.transform() would look
-something like this:
-```java
-public static <A, B> ListenableFuture<B> example(ListenableFuture<A> future) {
-  return Futures.transform(future, a -> toB(a));
-}
-```
-
-Unfortunately this doesn't actually work because Futures.transform has
-two variants: one that takes a Function as its second parameter and one that
-takes an AsyncFunction. The compiler can't determine which variant to use
-without additional type information.
-
-You could work around that by casting it like this:
-```java
-public static <A, B> ListenableFuture<B> example(ListenableFuture<A> future) {
-  return Futures.transform(future, (Function<A, B>) a -> toB(a));
-}
-```
-
-With futures-extra you can do this instead:
-```java
-public static <A, B> ListenableFuture<B> example(ListenableFuture<A> future) {
-  return FuturesExtra.syncTransform(future, a -> toB(a));
-}
-```
-
-This is just a simple delegating method that explicitly calls
-Futures.transform(future, Function). There is also a corresponding
-FuturesExtra.asyncTransform that calls Futures.transform(future, AsyncFunction).
 
 #### Joining multiple futures
 
