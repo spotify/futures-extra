@@ -631,9 +631,8 @@ public class FuturesExtra {
   }
 
   /**
-   * @deprecated Use {@link Futures#transform(ListenableFuture, Function)}
+   * Use {@link Futures#transform(ListenableFuture, Function)} instead if using Guava 20.
    */
-  @Deprecated
   public static <I, O> ListenableFuture<O> syncTransform(
           ListenableFuture<I> input, Function<? super I, ? extends O> function) {
     return Futures.transform(input, function);

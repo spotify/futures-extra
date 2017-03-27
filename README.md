@@ -18,7 +18,7 @@ Guava's ListenableFuture class
 
 ### Runtime dependencies
 * Java 6 or higher
-* Guava 20.0 or higher
+* Guava 19.0 or higher
 
 ### Usage
 
