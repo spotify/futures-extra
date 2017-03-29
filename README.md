@@ -18,7 +18,7 @@ Guava's ListenableFuture class
 
 ### Runtime dependencies
 * Java 6 or higher
-* Guava 18.0 or higher
+* Guava 19.0 or higher
 
 ### Usage
 
@@ -33,7 +33,7 @@ To import it with maven, use this:
 
 ### Examples
 
-#### Cleaner transforms for Java 8.
+#### Cleaner transforms for Java 8 with Guava < 20
 Java 8 introduced lambdas which can greatly reduce verbosity in code, which is
 great when using futures and transforms. One drawback with lambdas though is
 that when a lambda is supplied as an argument to a method with overloaded
@@ -70,6 +70,9 @@ public static <A, B> ListenableFuture<B> example(ListenableFuture<A> future) {
 This is just a simple delegating method that explicitly calls
 Futures.transform(future, Function). There is also a corresponding
 FuturesExtra.asyncTransform that calls Futures.transform(future, AsyncFunction).
+
+When using Guava 20 or higher there is no method overloading and corresponding
+methods in Futures class can be used directly.
 
 #### Joining multiple futures
 

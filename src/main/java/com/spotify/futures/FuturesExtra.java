@@ -105,7 +105,7 @@ public class FuturesExtra {
           final ListenableFuture<B> conditionValue,
           final ListenableFuture<A> future,
           final Validator<B> validator) {
-    return Futures.transform(conditionValue, new AsyncFunction<B, A>() {
+    return Futures.transformAsync(conditionValue, new AsyncFunction<B, A>() {
       @Override
       public ListenableFuture<A> apply(B value) throws Exception {
         try {
@@ -269,7 +269,7 @@ public class FuturesExtra {
   /**
    * Transform the input futures into a single future, using the provided
    * transform function. The transformation follows the same semantics as as
-   * {@link Futures#transform(ListenableFuture, AsyncFunction)} and the input
+   * {@link Futures#transformAsync(ListenableFuture, AsyncFunction)} and the input
    * futures are combined using {@link Futures#allAsList}.
    *
    * @param a a ListenableFuture to combine
@@ -341,7 +341,7 @@ public class FuturesExtra {
   /**
    * Transform the input futures into a single future, using the provided
    * transform function. The transformation follows the same semantics as as
-   * {@link Futures#transform(ListenableFuture, AsyncFunction)} and the input
+   * {@link Futures#transformAsync(ListenableFuture, AsyncFunction)} and the input
    * futures are combined using {@link Futures#allAsList}.
    *
    * @param a a ListenableFuture to combine
@@ -406,7 +406,7 @@ public class FuturesExtra {
   /**
    * Transform the input futures into a single future, using the provided
    * transform function. The transformation follows the same semantics as as
-   * {@link Futures#transform(ListenableFuture, AsyncFunction)} and the input
+   * {@link Futures#transformAsync(ListenableFuture, AsyncFunction)} and the input
    * futures are combined using {@link Futures#allAsList}.
    *
    * @param a a ListenableFuture to combine
@@ -477,7 +477,7 @@ public class FuturesExtra {
   /**
    * Transform the input futures into a single future, using the provided
    * transform function. The transformation follows the same semantics as as
-   * {@link Futures#transform(ListenableFuture, AsyncFunction)} and the input
+   * {@link Futures#transformAsync(ListenableFuture, AsyncFunction)} and the input
    * futures are combined using {@link Futures#allAsList}.
    *
    * @param a a ListenableFuture to combine
@@ -555,7 +555,7 @@ public class FuturesExtra {
   /**
    * Transform the input futures into a single future, using the provided
    * transform function. The transformation follows the same semantics as as
-   * {@link Futures#transform(ListenableFuture, AsyncFunction)} and the input
+   * {@link Futures#transformAsync(ListenableFuture, AsyncFunction)} and the input
    * futures are combined using {@link Futures#allAsList}.
    *
    * @param a a ListenableFuture to combine
@@ -597,7 +597,7 @@ public class FuturesExtra {
 
   private static <Z> ListenableFuture<Z> transform(final List<? extends ListenableFuture<?>> inputs,
                                                    final AsyncFunction<List<Object>, Z> function) {
-    return Futures.transform(Futures.allAsList(inputs), function);
+    return Futures.transformAsync(Futures.allAsList(inputs), function);
   }
 
   /**
@@ -630,14 +630,21 @@ public class FuturesExtra {
     return Futures.transform(Futures.allAsList(list), new JoinedResults.Transform(list));
   }
 
+  /**
+   * Use {@link Futures#transform(ListenableFuture, Function)} instead if using Guava 20.
+   */
   public static <I, O> ListenableFuture<O> syncTransform(
           ListenableFuture<I> input, Function<? super I, ? extends O> function) {
     return Futures.transform(input, function);
   }
 
+  /**
+   * @deprecated Use {@link Futures#transformAsync(ListenableFuture, AsyncFunction)}
+   */
+  @Deprecated
   public static <I, O> ListenableFuture<O> asyncTransform(
           ListenableFuture<I> input, AsyncFunction<? super I, ? extends O> function) {
-    return Futures.transform(input, function);
+    return Futures.transformAsync(input, function);
   }
 
   /**
