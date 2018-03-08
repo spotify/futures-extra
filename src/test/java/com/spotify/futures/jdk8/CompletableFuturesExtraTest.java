@@ -97,7 +97,18 @@ public class CompletableFuturesExtraTest {
     assertThat(unwrapped, is(sameInstance(completable)));
   }
 
-
+  @Test
+  public void testException() throws Exception {
+    final CompletableFuture<Object> future = new CompletableFuture<Object>();
+    future.completeExceptionally(new IllegalStateException());
+    final ListenableFuture<Object> converted = toListenableFuture(future);
+    try {
+      converted.get();
+      fail("Should have failed");
+    } catch (final ExecutionException e) {
+      assertEquals(IllegalStateException.class, e.getCause().getClass());
+    }
+  }
 
   @Test
   public void testToListenableFutureSuccess() throws ExecutionException, InterruptedException {

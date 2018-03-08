@@ -19,6 +19,7 @@ import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiConsumer;
 
@@ -40,9 +41,21 @@ class CompletableToListenableFutureWrapper<V>
   @Override
   public void accept(final V v, final Throwable throwable) {
     if (throwable != null) {
-      setException(throwable);
+      setException(unwrap(throwable));
     } else {
       set(v);
     }
+  }
+
+  private Throwable unwrap(Throwable throwable) {
+    // Don't go too deep in case there is recursive exceptions
+    for (int i = 0; i < 100; i++) {
+      if (throwable instanceof CompletionException) {
+        throwable = throwable.getCause();
+      } else {
+        break;
+      }
+    }
+    return throwable;
   }
 }
