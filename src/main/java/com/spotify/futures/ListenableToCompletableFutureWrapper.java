@@ -34,6 +34,12 @@ class ListenableToCompletableFutureWrapper<V>
     Futures.addCallback(future, this);
   }
 
+  @Override
+  public boolean cancel(final boolean mayInterruptIfRunning) {
+    future.cancel(mayInterruptIfRunning);
+    return super.cancel(mayInterruptIfRunning);
+  }
+
   public ListenableFuture<V> unwrap() {
     return future;
   }

@@ -18,6 +18,7 @@ package com.spotify.futures;
 import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.ListenableFuture;
 
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
@@ -39,9 +40,19 @@ class CompletableToListenableFutureWrapper<V>
   }
 
   @Override
+  public boolean cancel(final boolean mayInterruptIfRunning) {
+    future.toCompletableFuture().cancel(mayInterruptIfRunning);
+    return super.cancel(mayInterruptIfRunning);
+  }
+
+  @Override
   public void accept(final V v, final Throwable throwable) {
     if (throwable != null) {
-      setException(unwrap(throwable));
+      if (throwable instanceof CancellationException) {
+        cancel(false);
+      } else {
+        setException(unwrap(throwable));
+      }
     } else {
       set(v);
     }
