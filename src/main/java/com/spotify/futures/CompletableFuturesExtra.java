@@ -21,6 +21,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -44,6 +45,23 @@ public class CompletableFuturesExtra {
       return ((CompletableToListenableFutureWrapper<V>) future).unwrap();
     }
     return new ListenableToCompletableFutureWrapper<V>(future);
+  }
+
+  /**
+   * Wrap a {@link ListenableFuture} in a {@link CompletableFuture}. The returned future will
+   * complete with the same result or failure as the original future. Completing the returned
+   * future does not complete the original future.
+   *
+   * @param future The {@link ListenableFuture} to wrap in a {@link CompletableFuture}.
+   * @param executor The executor to run the wrapped {@code future} in.
+   * @return A {@link CompletableFuture} that completes when the original future completes.
+   */
+  public static <V> CompletableFuture<V> toCompletableFuture(
+      ListenableFuture<V> future, Executor executor) {
+    if (future instanceof CompletableToListenableFutureWrapper) {
+      return ((CompletableToListenableFutureWrapper<V>) future).unwrap();
+    }
+    return new ListenableToCompletableFutureWrapper<V>(future, executor);
   }
 
   /**
