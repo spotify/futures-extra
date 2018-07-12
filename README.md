@@ -16,6 +16,13 @@ Guava's ListenableFuture class
 * Java 8 or higher
 * Maven
 
+Note to build locally first set `GPG_TTY`:
+
+```
+    export GPG_TTY=$(tty)
+    mvn install
+```
+
 ### Runtime dependencies
 * Java 6 or higher
 * Guava 19.0 or higher
