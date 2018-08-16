@@ -121,13 +121,9 @@ public final class AsyncRetrier {
                                  final Predicate<T> retryCondition,
                                  Throwable t) {
     if (retries > 0) {
-      if (delay > 0) {
-        executorService.schedule(() ->
-            startRetry(future, code, retries - 1, delay, timeUnit, retryCondition),
-            delay, timeUnit);
-      } else {
-        startRetry(future, code, retries - 1, delay, timeUnit, retryCondition);
-      }
+      executorService.schedule(() ->
+          startRetry(future, code, retries - 1, delay, timeUnit, retryCondition),
+          delay, timeUnit);
     } else {
       future.setException(t);
     }
