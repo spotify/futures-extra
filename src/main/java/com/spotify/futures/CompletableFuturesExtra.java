@@ -15,11 +15,9 @@
  */
 package com.spotify.futures;
 
-import com.google.common.base.Throwables;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -154,20 +152,12 @@ public class CompletableFuturesExtra {
    * @param stage a completed {@link CompletionStage}.
    * @return the value of the stage if it has one.
    * @throws IllegalStateException if the stage is not completed.
-   * @throws com.google.common.util.concurrent.UncheckedExecutionException
-   * if the future has failed with a non-runtime exception, otherwise
-   * the actual exception
+   * @throws java.util.concurrent.CompletionException if the future completed exceptionally.
    */
   public static <T> T getCompleted(CompletionStage<T> stage) {
     CompletableFuture<T> future = stage.toCompletableFuture();
     checkCompleted(future);
-    try {
-      return future.join();
-    } catch (CompletionException e) {
-      final Throwable throwable = e.getCause();
-      Throwables.throwIfUnchecked(throwable);
-      throw new RuntimeException(throwable);
-    }
+    return future.join();
   }
 
   /**
