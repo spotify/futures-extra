@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.spotify.futures.jdk7;
+package com.spotify.futures;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;

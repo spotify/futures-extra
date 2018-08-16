@@ -1,4 +1,4 @@
-package com.spotify.futures.jdk8;
+package com.spotify.futures;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
