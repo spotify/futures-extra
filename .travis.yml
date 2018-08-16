@@ -15,15 +15,8 @@ install:
 script:
   - jdk_switcher use oraclejdk8
   - mvn test
-  - jdk_switcher use oraclejdk7
-  - mvn test
-  - jdk_switcher use openjdk7
-  - mvn test
-  - jdk_switcher use openjdk6
-  - mvn test
 
 after_success:
-  - jdk_switcher use oraclejdk8
   - mvn clean cobertura:cobertura coveralls:report -Dcoveralls.token=${COVERALLS_TOKEN}
 
 sudo: false
