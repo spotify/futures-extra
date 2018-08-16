@@ -43,7 +43,7 @@ public class CompletableFuturesExtra {
     if (future instanceof CompletableToListenableFutureWrapper) {
       return ((CompletableToListenableFutureWrapper<V>) future).unwrap();
     }
-    return new ListenableToCompletableFutureWrapper<V>(future);
+    return new ListenableToCompletableFutureWrapper<>(future);
   }
 
   /**
@@ -70,7 +70,7 @@ public class CompletableFuturesExtra {
     if (future instanceof ListenableToCompletableFutureWrapper) {
       return ((ListenableToCompletableFutureWrapper<V>) future).unwrap();
     }
-    return new CompletableToListenableFutureWrapper<V>(future);
+    return new CompletableToListenableFutureWrapper<>(future);
   }
 
   /**
@@ -81,7 +81,7 @@ public class CompletableFuturesExtra {
    * @return the exceptionally completed CompletableFuture
    */
   public static <T> CompletableFuture<T> exceptionallyCompletedFuture(Throwable throwable) {
-    final CompletableFuture<T> future = new CompletableFuture<T>();
+    final CompletableFuture<T> future = new CompletableFuture<>();
     future.completeExceptionally(throwable);
     return future;
   }
@@ -164,7 +164,9 @@ public class CompletableFuturesExtra {
     try {
       return future.join();
     } catch (CompletionException e) {
-      throw Throwables.propagate(e.getCause());
+      final Throwable throwable = e.getCause();
+      Throwables.throwIfUnchecked(throwable);
+      throw new RuntimeException(throwable);
     }
   }
 

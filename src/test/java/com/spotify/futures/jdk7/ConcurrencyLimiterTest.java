@@ -19,6 +19,7 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 
 import com.spotify.futures.ConcurrencyLimiter;
@@ -63,11 +64,8 @@ public class ConcurrencyLimiterTest {
   @Test
   public void testJobThrows() throws Exception {
     final ConcurrencyLimiter<String> limiter = ConcurrencyLimiter.create(1, 10);
-    final ListenableFuture<String> response = limiter.add(new Callable<ListenableFuture<String>>() {
-      @Override
-      public ListenableFuture<String> call() throws Exception {
-        throw new IllegalStateException();
-      }
+    final ListenableFuture<String> response = limiter.add(() -> {
+      throw new IllegalStateException();
     });
 
     assertTrue(response.isDone());
@@ -95,12 +93,9 @@ public class ConcurrencyLimiterTest {
     final ListenableFuture<String> response2 = limiter.add(job(request2));
 
     final AtomicBoolean wasInvoked = new AtomicBoolean();
-    final ListenableFuture<String> response3 = limiter.add(new Callable<ListenableFuture<String>>() {
-      @Override
-      public ListenableFuture<String> call() throws Exception {
-        wasInvoked.set(true);
-        return null;
-      }
+    final ListenableFuture<String> response3 = limiter.add(() -> {
+      wasInvoked.set(true);
+      return null;
     });
 
     response3.cancel(false);
@@ -237,12 +232,7 @@ public class ConcurrencyLimiterTest {
   }
 
   private Callable<ListenableFuture<String>> job(final ListenableFuture<String> future) {
-    return new Callable<ListenableFuture<String>>() {
-      @Override
-      public ListenableFuture<String> call() throws Exception {
-        return future;
-      }
-    };
+    return () -> future;
   }
 
   private static class CountingJob implements Callable<ListenableFuture<String>> {
@@ -266,7 +256,7 @@ public class ConcurrencyLimiterTest {
         public void onFailure(Throwable t) {
           activeCount.decrementAndGet();
         }
-      });
+      }, MoreExecutors.directExecutor());
     }
 
     @Override

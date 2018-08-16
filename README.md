@@ -17,8 +17,8 @@ Guava's ListenableFuture class
 * Maven
 
 ### Runtime dependencies
-* Java 6 or higher
-* Guava 19.0 or higher
+* Java 8 or higher
+* Guava 21.0 or higher
 
 ### Usage
 
@@ -28,51 +28,10 @@ To import it with maven, use this:
     <dependency>
       <groupId>com.spotify</groupId>
       <artifactId>futures-extra</artifactId>
-      <version>3.1.1</version>
+      <version>4.0.0</version>
     </dependency>
 
 ### Examples
-
-#### Cleaner transforms for Java 8 with Guava < 20
-Java 8 introduced lambdas which can greatly reduce verbosity in code, which is
-great when using futures and transforms. One drawback with lambdas though is
-that when a lambda is supplied as an argument to a method with overloaded
-parameters, the compiler may fail to figure out which variant of a method call
-that is intended to be used.
-
-Ideally, applying java 8 lambdas to Guava's Futures.transform() would look
-something like this:
-```java
-public static <A, B> ListenableFuture<B> example(ListenableFuture<A> future) {
-  return Futures.transform(future, a -> toB(a));
-}
-```
-
-Unfortunately this doesn't actually work because Futures.transform has
-two variants: one that takes a Function as its second parameter and one that
-takes an AsyncFunction. The compiler can't determine which variant to use
-without additional type information.
-
-You could work around that by casting it like this:
-```java
-public static <A, B> ListenableFuture<B> example(ListenableFuture<A> future) {
-  return Futures.transform(future, (Function<A, B>) a -> toB(a));
-}
-```
-
-With futures-extra you can do this instead:
-```java
-public static <A, B> ListenableFuture<B> example(ListenableFuture<A> future) {
-  return FuturesExtra.syncTransform(future, a -> toB(a));
-}
-```
-
-This is just a simple delegating method that explicitly calls
-Futures.transform(future, Function). There is also a corresponding
-FuturesExtra.asyncTransform that calls Futures.transform(future, AsyncFunction).
-
-When using Guava 20 or higher there is no method overloading and corresponding
-methods in Futures class can be used directly.
 
 #### Joining multiple futures
 
@@ -80,15 +39,12 @@ A common use case is waiting for two or more futures and then transforming the
 result to something else. You can do this in a couple of different ways, here
 are two of them:
 
-The examples are for Java 8, but they also work for Java 6 and 7 (though it
-becomes more verbose).
-
 ```java
 final ListenableFuture<A> futureA = getFutureA();
 final ListenableFuture<B> futureB = getFutureB();
 
 ListenableFuture<C> ret = Futures.transform(Futures.allAsList(futureA, futureB),
-    (Function<List<?>, C>)list -> combine((A) list.get(0), (B) list.get(1));
+    (Function<List<?>, C>)list -> combine((A) list.get(0), (B) list.get(1), executor);
 ```
 where combine is a method with parameters of type A and B returning C.
 
@@ -101,7 +57,7 @@ final ListenableFuture<A> futureA = getFutureA();
 final ListenableFuture<B> futureB = getFutureB();
 
 ListenableFuture<C> ret = Futures.transform(Futures.allAsList(futureA, futureB),
-    (Function<List<?>, C>)list -> combine(Futures.getUnchecked(futureA), Futures.getUnchecked(futureB));
+    (Function<List<?>, C>)list -> combine(Futures.getUnchecked(futureA), Futures.getUnchecked(futureB), executor);
 ```
 Now you instead need to make sure that the futures in the transform input are
 the same as the ones you getUnchecked. If you fail to do this, things may work
@@ -115,7 +71,7 @@ final ListenableFuture<A> futureA = getFutureA();
 final ListenableFuture<B> futureB = getFutureB();
 
 ListenableFuture<C> ret = FuturesExtra.syncTransform2(futureA, futureB,
-    (a, b) -> combine(a, b));
+    (a, b) -> combine(a, b), executor);
 ```
 
 This is much clearer! We don't need any type information because the lambda can
@@ -130,9 +86,9 @@ some refactoring, but you can also use FuturesExtra.join():
 final ListenableFuture<A> futureA = getFutureA();
 final ListenableFuture<B> futureB = getFutureB();
 
-final ListenableFuture<JoinedResults> futureJoined = FuturesExtra.join(futureA, futureB);
+final ListenableFuture<JoinedResults> futureJoined = FuturesExtra.join(executor, futureA, futureB);
 return Futures.transform(futureJoined,
-    joined -> combine(joined.get(futureA), joined.get(futureB)));
+    joined -> combine(joined.get(futureA), joined.get(futureB)), executor);
 ```
 
 This supports an arbitrary number of futures, but is slightly more complex.
@@ -156,7 +112,7 @@ If you have some futures and want to succeed as soon as the first one succeeds,
 you can use select:
 ```java
 final List<ListenableFuture<A>> futures = getFutures();
-final ListenableFuture<A> firstSuccessful = FuturesExtra.select(futures);
+final ListenableFuture<A> firstSuccessful = FuturesExtra.select(futures, executor);
 ```
 
 #### Success/Failure callbacks
@@ -164,7 +120,7 @@ final ListenableFuture<A> firstSuccessful = FuturesExtra.select(futures);
 You can attach callbacks that are run depending on the results of a future:
 ```java
 final ListenableFuture<A> future = getFuture();
-FuturesExtra.addCallback(future, System.out::println, Throwable::printStackTrace);
+FuturesExtra.addCallback(future, System.out::println, Throwable::printStackTrace, executor);
 ```
 
 
@@ -172,12 +128,12 @@ Alternatively, if you are only interested in either successful or failed
 results of a future, you can use:
 ```java
 final ListenableFuture<A> future = getFuture();
-FuturesExtra.addSuccessCallback(future, System.out::println);
+FuturesExtra.addSuccessCallback(future, System.out::println, executor);
 ```
 
 ```java
 final ListenableFuture<B> future = getFuture();
-FuturesExtra.addFailureCallback(future, System.out::println);
+FuturesExtra.addFailureCallback(future, System.out::println, executor);
 ```
 
 #### Concurrency limiting
