@@ -75,7 +75,7 @@ public final class JoinedResults {
     }
   }
 
-  private static enum Null {
+  private enum Null {
     INSTANCE
   }
 }

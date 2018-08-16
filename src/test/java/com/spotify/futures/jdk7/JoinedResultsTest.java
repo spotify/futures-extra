@@ -18,19 +18,18 @@ package com.spotify.futures.jdk7;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+import com.google.common.util.concurrent.MoreExecutors;
+import com.spotify.futures.FuturesExtra;
+import com.spotify.futures.JoinedResults;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import com.google.common.collect.Lists;
 import org.junit.Test;
 
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
-
-import com.spotify.futures.FuturesExtra;
-import com.spotify.futures.JoinedResults;
 
 public class JoinedResultsTest {
   @Test
@@ -40,7 +39,7 @@ public class JoinedResultsTest {
     ListenableFuture<Integer> integer = Futures.immediateFuture(1);
     List<String> valueList = Collections.singletonList("value");
     ListenableFuture<List<String>> list = Futures.immediateFuture(valueList);
-    JoinedResults joined = FuturesExtra.join(firstString, secondString, integer, list).get();
+    JoinedResults joined = FuturesExtra.join(MoreExecutors.directExecutor(), firstString, secondString, integer, list).get();
     assertEquals("ok", joined.get(firstString));
     assertEquals("alsoString", joined.get(secondString));
     assertEquals(Integer.valueOf(1), joined.get(integer));
@@ -52,7 +51,7 @@ public class JoinedResultsTest {
     ListenableFuture<String> futureA = Futures.immediateFuture("a");
     ListenableFuture<String> futureB = Futures.immediateFuture("b");
     List<ListenableFuture<String>> list = Arrays.asList(futureA, futureB);
-    JoinedResults joined = FuturesExtra.join(list).get();
+    JoinedResults joined = FuturesExtra.join(MoreExecutors.directExecutor(), list).get();
     assertEquals("a", joined.get(futureA));
     assertEquals("b", joined.get(futureB));
   }
@@ -63,7 +62,7 @@ public class JoinedResultsTest {
     SettableFuture<String> futureB = SettableFuture.create();
     List<SettableFuture<String>> list = Arrays.asList(futureA, futureB);
 
-    final ListenableFuture<JoinedResults> joinFuture = FuturesExtra.join(list);
+    final ListenableFuture<JoinedResults> joinFuture = FuturesExtra.join(MoreExecutors.directExecutor(), list);
     assertFalse(joinFuture.isDone());
 
     futureA.set("a");
@@ -78,13 +77,13 @@ public class JoinedResultsTest {
   @Test
   public void testNullTypes() throws Exception {
     ListenableFuture<String> nullable = Futures.immediateFuture(null);
-    JoinedResults joined = FuturesExtra.join(nullable).get();
+    JoinedResults joined = FuturesExtra.join(MoreExecutors.directExecutor(), nullable).get();
     assertEquals(null, joined.get(nullable));
   }
 
   @Test(expected=IllegalArgumentException.class)
   public void testGetMissingFromJoin() throws Exception {
-    JoinedResults joined = FuturesExtra.join().get();
+    JoinedResults joined = FuturesExtra.join(MoreExecutors.directExecutor()).get();
     joined.get(Futures.immediateFuture(null));
   }
 }

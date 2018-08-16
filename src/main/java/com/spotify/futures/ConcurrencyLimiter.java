@@ -19,6 +19,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 
 import java.util.concurrent.ArrayBlockingQueue;
@@ -46,7 +47,7 @@ public final class ConcurrencyLimiter<T> implements FutureJobInvoker<T> {
     this.maxQueueSize = maxQueueSize;
     Preconditions.checkArgument(maxConcurrency > 0);
     Preconditions.checkArgument(maxQueueSize > 0);
-    this.queue = new ArrayBlockingQueue<Job<T>>(maxQueueSize);
+    this.queue = new ArrayBlockingQueue<>(maxQueueSize);
     this.limit = new Semaphore(maxConcurrency);
   }
 
@@ -58,7 +59,7 @@ public final class ConcurrencyLimiter<T> implements FutureJobInvoker<T> {
    * @return a new concurrency limiter
    */
   public static <T> ConcurrencyLimiter<T> create(int maxConcurrency, int maxQueueSize) {
-    return new ConcurrencyLimiter<T>(maxConcurrency, maxQueueSize);
+    return new ConcurrencyLimiter<>(maxConcurrency, maxQueueSize);
   }
 
   /**
@@ -66,7 +67,7 @@ public final class ConcurrencyLimiter<T> implements FutureJobInvoker<T> {
    * futures is less than the maxConcurrency limit.
    *
    * @param callable - a function that creates a future.
-   * @returns a proxy future that completes with the future created by the
+   * @return a proxy future that completes with the future created by the
    *          input function.
    *          This future will be immediately failed with
    *          {@link CapacityReachedException} if the soft queue size limit is exceeded.
@@ -76,7 +77,7 @@ public final class ConcurrencyLimiter<T> implements FutureJobInvoker<T> {
   public ListenableFuture<T> add(Callable<? extends ListenableFuture<T>> callable) {
     Preconditions.checkNotNull(callable);
     final SettableFuture<T> response = SettableFuture.create();
-    final Job<T> job = new Job<T>(callable, response);
+    final Job<T> job = new Job<>(callable, response);
     if (!queue.offer(job)) {
       final String message = "Queue size has reached capacity: " + maxQueueSize;
       return Futures.immediateFailedFuture(new CapacityReachedException(message));
@@ -86,7 +87,7 @@ public final class ConcurrencyLimiter<T> implements FutureJobInvoker<T> {
   }
 
   /**
-   * @returns the number of callables that are queued up and haven't started
+   * @return the number of callables that are queued up and haven't started
    *          yet.
    */
   public int numQueued() {
@@ -94,21 +95,21 @@ public final class ConcurrencyLimiter<T> implements FutureJobInvoker<T> {
   }
 
   /**
-   * @returns the number of currently active futures that have not yet completed.
+   * @return the number of currently active futures that have not yet completed.
    */
   public int numActive() {
     return maxConcurrency - limit.availablePermits();
   }
 
   /**
-   * @returns the number of additional callables that can be queued before failing.
+   * @return the number of additional callables that can be queued before failing.
    */
   public int remainingQueueCapacity() {
     return queue.remainingCapacity();
   }
 
   /**
-    * @returns the number of additional callables that can be run without queueing.
+    * @return the number of additional callables that can be run without queueing.
     */
   public int remainingActiveCapacity() {
     return limit.availablePermits();
@@ -176,7 +177,7 @@ public final class ConcurrencyLimiter<T> implements FutureJobInvoker<T> {
         response.setException(t);
         pump();
       }
-    });
+    }, MoreExecutors.directExecutor());
   }
 
   private static class Job<T> {

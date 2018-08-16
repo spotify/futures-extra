@@ -21,6 +21,7 @@ import com.google.common.base.Supplier;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 
 import java.util.concurrent.ScheduledExecutorService;
@@ -110,7 +111,7 @@ public final class AsyncRetrier {
       public void onFailure(Throwable t) {
         handleFailure(future, code, retries, delay, timeUnit, retryCondition, t);
       }
-    });
+    }, MoreExecutors.directExecutor());
   }
 
   private <T> void handleFailure(final SettableFuture<T> future,
@@ -121,12 +122,9 @@ public final class AsyncRetrier {
                                  Throwable t) {
     if (retries > 0) {
       if (delay > 0) {
-        executorService.schedule(new Runnable() {
-          @Override
-          public void run() {
-            startRetry(future, code, retries - 1, delay, timeUnit, retryCondition);
-          }
-        }, delay, timeUnit);
+        executorService.schedule(() ->
+            startRetry(future, code, retries - 1, delay, timeUnit, retryCondition),
+            delay, timeUnit);
       } else {
         startRetry(future, code, retries - 1, delay, timeUnit, retryCondition);
       }

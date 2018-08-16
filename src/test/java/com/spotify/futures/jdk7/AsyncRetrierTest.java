@@ -193,11 +193,6 @@ public class AsyncRetrierTest {
   }
 
   private Predicate<String> successPredicate() {
-    return new Predicate<String>() {
-      @Override
-      public boolean apply(String input) {
-        return input.equals("success!!!");
-      }
-    };
+    return input -> input.equals("success!!!");
   }
 }

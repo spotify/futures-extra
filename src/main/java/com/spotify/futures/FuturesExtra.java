@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -57,12 +58,9 @@ public class FuturesExtra {
           final long timeout, final TimeUnit unit) {
     final SettableFuture<T> promise = SettableFuture.create();
 
-    scheduledExecutorService.schedule(new Runnable() {
-      @Override
-      public void run() {
-        String message = "Future timed out after " + timeout + " " + unit.name();
-        promise.setException(new TimeoutException(message));
-      }
+    scheduledExecutorService.schedule(() -> {
+      String message = "Future timed out after " + timeout + " " + unit.name();
+      promise.setException(new TimeoutException(message));
     }, timeout, unit);
 
     Futures.addCallback(future, new FutureCallback<T>() {
@@ -104,20 +102,18 @@ public class FuturesExtra {
   public static <A, B> ListenableFuture<A> fastFail(
           final ListenableFuture<B> conditionValue,
           final ListenableFuture<A> future,
-          final Validator<B> validator) {
-    return Futures.transformAsync(conditionValue, new AsyncFunction<B, A>() {
-      @Override
-      public ListenableFuture<A> apply(B value) throws Exception {
-        try {
-          validator.validate(value);
-          return future;
+          final Validator<B> validator,
+          final Executor executor) {
+    return Futures.transformAsync(conditionValue, value -> {
+      try {
+        validator.validate(value);
+        return future;
 
-        } catch (Exception e) {
-          future.cancel(false);
-          throw e;
-        }
+      } catch (Exception e) {
+        future.cancel(false);
+        throw e;
       }
-    });
+    }, executor);
   }
 
   /**
@@ -130,7 +126,9 @@ public class FuturesExtra {
    * @return a new future with the result of the first completing future.
    * @throws NullPointerException if the {@param futures} is null
    */
-  public static <T> ListenableFuture<T> select(final List<? extends ListenableFuture<T>> futures) {
+  public static <T> ListenableFuture<T> select(
+      final List<? extends ListenableFuture<T>> futures,
+      final Executor executor) {
     Preconditions.checkNotNull(futures);
     if (futures.isEmpty()) {
       return Futures.immediateFailedFuture(new NoSuchElementException("List is empty"));
@@ -154,7 +152,7 @@ public class FuturesExtra {
     };
 
     for (final ListenableFuture<T> future: futures) {
-      Futures.addCallback(future, cb);
+      Futures.addCallback(future, cb, executor);
     }
     return promise;
   }
@@ -183,7 +181,8 @@ public class FuturesExtra {
   public static <T> void addCallback(
           final ListenableFuture<T> future,
           final Consumer<? super T> success,
-          final Consumer<Throwable> failure) {
+          final Consumer<Throwable> failure,
+          final Executor executor) {
     if (success == null && failure == null) {
       throw new NullPointerException();
     }
@@ -201,7 +200,7 @@ public class FuturesExtra {
           failure.accept(throwable);
         }
       }
-    });
+    }, executor);
   }
 
   /**
@@ -211,9 +210,10 @@ public class FuturesExtra {
    * @param consumer a consumer, to be called with the result of the successful future.
    */
   public static <T> void addSuccessCallback(
-          ListenableFuture<T> future,
-          final Consumer<? super T> consumer) {
-    addCallback(future, consumer, null);
+          final ListenableFuture<T> future,
+          final Consumer<? super T> consumer,
+          final Executor executor) {
+    addCallback(future, consumer, null, executor);
   }
 
   /**
@@ -223,15 +223,16 @@ public class FuturesExtra {
    * @param consumer a consumer, to be called with the result of the failed future.
    */
   public static <T> void addFailureCallback(
-          ListenableFuture<T> future,
-          final Consumer<Throwable> consumer) {
-    addCallback(future, null, consumer);
+          final ListenableFuture<T> future,
+          final Consumer<Throwable> consumer,
+          final Executor executor) {
+    addCallback(future, null, consumer, executor);
   }
 
   /**
    * Transform the input futures into a single future, using the provided
    * transform function. The transformation follows the same semantics as as
-   * {@link Futures#transform(ListenableFuture, Function)} and the input
+   * {@link Futures#transform(ListenableFuture, Function, Executor)} and the input
    * futures are combined using {@link Futures#allAsList}.
    *
    * @param a a ListenableFuture to combine
@@ -242,13 +243,13 @@ public class FuturesExtra {
   public static <Z, A, B> ListenableFuture<Z> syncTransform2(
           ListenableFuture<A> a,
           ListenableFuture<B> b,
-          final Function2<Z, ? super A, ? super B> function) {
-    return transform(Arrays.asList(a, b), new Function<List<Object>, Z>() {
-      @Override
-      public Z apply(List<Object> results) {
-        return function.apply((A) results.get(0), (B) results.get(1));
-      }
-    });
+          final Function2<Z, ? super A, ? super B> function,
+          final Executor executor) {
+    return transform(
+        Arrays.asList(a, b),
+        (Function<List<Object>, Z>) results ->
+            function.apply((A) results.get(0), (B) results.get(1)),
+        executor);
   }
 
   /**
@@ -269,7 +270,7 @@ public class FuturesExtra {
   /**
    * Transform the input futures into a single future, using the provided
    * transform function. The transformation follows the same semantics as as
-   * {@link Futures#transformAsync(ListenableFuture, AsyncFunction)} and the input
+   * {@link Futures#transformAsync(ListenableFuture, AsyncFunction, Executor)} and the input
    * futures are combined using {@link Futures#allAsList}.
    *
    * @param a a ListenableFuture to combine
@@ -280,13 +281,13 @@ public class FuturesExtra {
   public static <Z, A, B> ListenableFuture<Z> asyncTransform2(
           ListenableFuture<A> a,
           ListenableFuture<B> b,
-          final AsyncFunction2<Z, ? super A, ? super B> function) {
-    return transform(Arrays.asList(a, b), new AsyncFunction<List<Object>, Z>() {
-      @Override
-      public ListenableFuture<Z> apply(List<Object> results) throws Exception {
-        return function.apply((A) results.get(0), (B) results.get(1));
-      }
-    });
+          final AsyncFunction2<Z, ? super A, ? super B> function,
+          final Executor executor) {
+    return transform(
+        Arrays.asList(a, b),
+        (AsyncFunction<List<Object>, Z>) results ->
+            function.apply((A) results.get(0), (B) results.get(1)),
+        executor);
   }
 
   /**
@@ -308,7 +309,7 @@ public class FuturesExtra {
   /**
    * Transform the input futures into a single future, using the provided
    * transform function. The transformation follows the same semantics as as
-   * {@link Futures#transform(ListenableFuture, Function)} and the input
+   * {@link Futures#transform(ListenableFuture, Function, Executor)} and the input
    * futures are combined using {@link Futures#allAsList}.
    *
    * @param a a ListenableFuture to combine
@@ -321,13 +322,13 @@ public class FuturesExtra {
           ListenableFuture<A> a,
           ListenableFuture<B> b,
           ListenableFuture<C> c,
-          final Function3<Z, ? super A, ? super B, ? super C> function) {
-    return transform(Arrays.asList(a, b, c), new Function<List<Object>, Z>() {
-      @Override
-      public Z apply(List<Object> results) {
-        return function.apply((A) results.get(0), (B) results.get(1), (C) results.get(2));
-      }
-    });
+          final Function3<Z, ? super A, ? super B, ? super C> function,
+          final Executor executor) {
+    return transform(
+        Arrays.asList(a, b, c),
+        (Function<List<Object>, Z>) results ->
+            function.apply((A) results.get(0), (B) results.get(1), (C) results.get(2)),
+        executor);
   }
 
   /**
@@ -341,7 +342,7 @@ public class FuturesExtra {
   /**
    * Transform the input futures into a single future, using the provided
    * transform function. The transformation follows the same semantics as as
-   * {@link Futures#transformAsync(ListenableFuture, AsyncFunction)} and the input
+   * {@link Futures#transformAsync(ListenableFuture, AsyncFunction, Executor)} and the input
    * futures are combined using {@link Futures#allAsList}.
    *
    * @param a a ListenableFuture to combine
@@ -354,13 +355,13 @@ public class FuturesExtra {
           ListenableFuture<A> a,
           ListenableFuture<B> b,
           ListenableFuture<C> c,
-          final AsyncFunction3<Z, ? super A, ? super B, ? super C> function) {
-    return transform(Arrays.asList(a, b, c), new AsyncFunction<List<Object>, Z>() {
-      @Override
-      public ListenableFuture<Z> apply(List<Object> results) throws Exception {
-        return function.apply((A) results.get(0), (B) results.get(1), (C) results.get(2));
-      }
-    });
+          final AsyncFunction3<Z, ? super A, ? super B, ? super C> function,
+          final Executor executor) {
+    return transform(
+        Arrays.asList(a, b, c),
+        (AsyncFunction<List<Object>, Z>) results ->
+            function.apply((A) results.get(0), (B) results.get(1), (C) results.get(2)),
+        executor);
   }
 
   public interface AsyncFunction3<Z, A, B, C> {
@@ -370,7 +371,7 @@ public class FuturesExtra {
   /**
    * Transform the input futures into a single future, using the provided
    * transform function. The transformation follows the same semantics as as
-   * {@link Futures#transform(ListenableFuture, Function)} and the input
+   * {@link Futures#transform(ListenableFuture, Function, Executor)} and the input
    * futures are combined using {@link Futures#allAsList}.
    *
    * @param a a ListenableFuture to combine
@@ -385,14 +386,13 @@ public class FuturesExtra {
           ListenableFuture<B> b,
           ListenableFuture<C> c,
           ListenableFuture<D> d,
-          final Function4<Z, ? super A, ? super B, ? super C, ? super D> function) {
-    return transform(Arrays.asList(a, b, c, d), new Function<List<Object>, Z>() {
-      @Override
-      public Z apply(List<Object> results) {
-        return function.apply(
-                (A) results.get(0), (B) results.get(1), (C) results.get(2), (D) results.get(3));
-      }
-    });
+          final Function4<Z, ? super A, ? super B, ? super C, ? super D> function,
+          final Executor executor) {
+    return transform(
+        Arrays.asList(a, b, c, d),
+        (Function<List<Object>, Z>) results -> function.apply(
+            (A) results.get(0), (B) results.get(1), (C) results.get(2), (D) results.get(3)),
+        executor);
   }
 
   /**
@@ -406,7 +406,7 @@ public class FuturesExtra {
   /**
    * Transform the input futures into a single future, using the provided
    * transform function. The transformation follows the same semantics as as
-   * {@link Futures#transformAsync(ListenableFuture, AsyncFunction)} and the input
+   * {@link Futures#transformAsync(ListenableFuture, AsyncFunction, Executor)} and the input
    * futures are combined using {@link Futures#allAsList}.
    *
    * @param a a ListenableFuture to combine
@@ -421,14 +421,13 @@ public class FuturesExtra {
           ListenableFuture<B> b,
           ListenableFuture<C> c,
           ListenableFuture<D> d,
-          final AsyncFunction4<Z, ? super A, ? super B, ? super C, ? super D> function) {
-    return transform(Arrays.asList(a, b, c, d), new AsyncFunction<List<Object>, Z>() {
-      @Override
-      public ListenableFuture<Z> apply(List<Object> results) throws Exception {
-        return function.apply(
-                (A) results.get(0), (B) results.get(1), (C) results.get(2), (D) results.get(3));
-      }
-    });
+          final AsyncFunction4<Z, ? super A, ? super B, ? super C, ? super D> function,
+          final Executor executor) {
+    return transform(
+        Arrays.asList(a, b, c, d),
+        (AsyncFunction<List<Object>, Z>) results -> function.apply(
+                (A) results.get(0), (B) results.get(1), (C) results.get(2), (D) results.get(3)),
+        executor);
   }
 
   public interface AsyncFunction4<Z, A, B, C, D> {
@@ -438,7 +437,7 @@ public class FuturesExtra {
   /**
    * Transform the input futures into a single future, using the provided
    * transform function. The transformation follows the same semantics as as
-   * {@link Futures#transform(ListenableFuture, Function)} and the input
+   * {@link Futures#transform(ListenableFuture, Function, Executor)} and the input
    * futures are combined using {@link Futures#allAsList}.
    *
    * @param a a ListenableFuture to combine
@@ -455,15 +454,14 @@ public class FuturesExtra {
           ListenableFuture<C> c,
           ListenableFuture<D> d,
           ListenableFuture<E> e,
-          final Function5<Z, ? super A, ? super B, ? super C, ? super D, ? super E> function) {
-    return transform(Arrays.asList(a, b, c, d, e), new Function<List<Object>, Z>() {
-      @Override
-      public Z apply(List<Object> results) {
-        return function.apply(
-                (A) results.get(0), (B) results.get(1), (C) results.get(2),
-                (D) results.get(3), (E) results.get(4));
-      }
-    });
+          final Function5<Z, ? super A, ? super B, ? super C, ? super D, ? super E> function,
+          final Executor executor) {
+    return transform(
+        Arrays.asList(a, b, c, d, e),
+        (Function<List<Object>, Z>) results -> function.apply(
+            (A) results.get(0), (B) results.get(1), (C) results.get(2),
+            (D) results.get(3), (E) results.get(4)),
+        executor);
   }
 
   /**
@@ -477,7 +475,7 @@ public class FuturesExtra {
   /**
    * Transform the input futures into a single future, using the provided
    * transform function. The transformation follows the same semantics as as
-   * {@link Futures#transformAsync(ListenableFuture, AsyncFunction)} and the input
+   * {@link Futures#transformAsync(ListenableFuture, AsyncFunction, Executor)} and the input
    * futures are combined using {@link Futures#allAsList}.
    *
    * @param a a ListenableFuture to combine
@@ -495,15 +493,14 @@ public class FuturesExtra {
           ListenableFuture<D> d,
           ListenableFuture<E> e,
           final AsyncFunction5<Z, ? super A, ? super B, ? super C,
-                  ? super D, ? super E> function) {
-    return transform(Arrays.asList(a, b, c, d, e), new AsyncFunction<List<Object>, Z>() {
-      @Override
-      public ListenableFuture<Z> apply(List<Object> results) throws Exception {
-        return function.apply(
-                (A) results.get(0), (B) results.get(1), (C) results.get(2),
-                (D) results.get(3), (E) results.get(4));
-      }
-    });
+                  ? super D, ? super E> function,
+          final Executor executor) {
+    return transform(
+        Arrays.asList(a, b, c, d, e),
+        (AsyncFunction<List<Object>, Z>) results -> function.apply(
+            (A) results.get(0), (B) results.get(1), (C) results.get(2),
+            (D) results.get(3), (E) results.get(4)),
+        executor);
   }
 
   public interface AsyncFunction5<Z, A, B, C, D, E> {
@@ -513,7 +510,7 @@ public class FuturesExtra {
   /**
    * Transform the input futures into a single future, using the provided
    * transform function. The transformation follows the same semantics as as
-   * {@link Futures#transform(ListenableFuture, Function)} and the input
+   * {@link Futures#transform(ListenableFuture, Function, Executor)} and the input
    * futures are combined using {@link Futures#allAsList}.
    *
    * @param a a ListenableFuture to combine
@@ -533,15 +530,14 @@ public class FuturesExtra {
       ListenableFuture<E> e,
       ListenableFuture<F> f,
       final Function6<Z, ? super A, ? super B, ? super C,
-              ? super D, ? super E, ? super F> function) {
-    return transform(Arrays.asList(a, b, c, d, e, f), new Function<List<Object>, Z>() {
-      @Override
-      public Z apply(List<Object> results) {
-        return function.apply(
+              ? super D, ? super E, ? super F> function,
+      final Executor executor) {
+    return transform(
+        Arrays.asList(a, b, c, d, e, f),
+        (Function<List<Object>, Z>) results -> function.apply(
                 (A) results.get(0), (B) results.get(1), (C) results.get(2),
-                (D) results.get(3), (E) results.get(4), (F) results.get(5));
-      }
-    });
+                (D) results.get(3), (E) results.get(4), (F) results.get(5)),
+        executor);
   }
 
   /**
@@ -555,7 +551,7 @@ public class FuturesExtra {
   /**
    * Transform the input futures into a single future, using the provided
    * transform function. The transformation follows the same semantics as as
-   * {@link Futures#transformAsync(ListenableFuture, AsyncFunction)} and the input
+   * {@link Futures#transformAsync(ListenableFuture, AsyncFunction, Executor)} and the input
    * futures are combined using {@link Futures#allAsList}.
    *
    * @param a a ListenableFuture to combine
@@ -575,15 +571,14 @@ public class FuturesExtra {
       ListenableFuture<E> e,
       ListenableFuture<F> f,
       final AsyncFunction6<Z, ? super A, ? super B, ? super C, ? super D,
-              ? super E, ? super F> function) {
-    return transform(Arrays.asList(a, b, c, d, e, f), new AsyncFunction<List<Object>, Z>() {
-      @Override
-      public ListenableFuture<Z> apply(List<Object> results) throws Exception {
-        return function.apply(
+              ? super E, ? super F> function,
+      final Executor executor) {
+    return transform(
+        Arrays.asList(a, b, c, d, e, f),
+        (AsyncFunction<List<Object>, Z>) results -> function.apply(
                 (A) results.get(0), (B) results.get(1), (C) results.get(2),
-                (D) results.get(3), (E) results.get(4), (F) results.get(5));
-      }
-    });
+                (D) results.get(3), (E) results.get(4), (F) results.get(5)),
+        executor);
   }
 
   public interface AsyncFunction6<Z, A, B, C, D, E, F> {
@@ -591,23 +586,28 @@ public class FuturesExtra {
   }
 
   private static <Z> ListenableFuture<Z> transform(final List<? extends ListenableFuture<?>> inputs,
-                                                   final Function<List<Object>, Z> function) {
-    return Futures.transform(Futures.allAsList(inputs), function);
+                                                   final Function<List<Object>, Z> function,
+                                                   final Executor executor) {
+    return Futures.transform(Futures.allAsList(inputs), function, executor);
   }
 
   private static <Z> ListenableFuture<Z> transform(final List<? extends ListenableFuture<?>> inputs,
-                                                   final AsyncFunction<List<Object>, Z> function) {
-    return Futures.transformAsync(Futures.allAsList(inputs), function);
+                                                   final AsyncFunction<List<Object>, Z> function,
+                                                   final Executor executor) {
+    return Futures.transformAsync(Futures.allAsList(inputs), function, executor);
   }
 
   /**
    * <p>Transform a list of futures to a future that returns a joined result of them all.
    * The result can be used to get the joined results and ensures no future that were not part of
    * the join is accessed.</p>
-   * @see #join(ListenableFuture...)
+   * @see #join(Executor, ListenableFuture...)
    */
-  public static ListenableFuture<JoinedResults> join(List<? extends ListenableFuture<?>> inputs) {
-    return Futures.transform(Futures.allAsList(inputs), new JoinedResults.Transform(inputs));
+  public static ListenableFuture<JoinedResults> join(
+      final Executor executor, final List<? extends ListenableFuture<?>> inputs) {
+    return Futures.transform(
+        Futures.allAsList(inputs),
+        new JoinedResults.Transform(inputs), executor);
   }
 
   /**
@@ -625,26 +625,10 @@ public class FuturesExtra {
    * }
    * </pre>
    */
-  public static ListenableFuture<JoinedResults> join(ListenableFuture<?>... inputs) {
-    List<? extends ListenableFuture<?>> list = Arrays.asList(inputs);
-    return Futures.transform(Futures.allAsList(list), new JoinedResults.Transform(list));
-  }
-
-  /**
-   * Use {@link Futures#transform(ListenableFuture, Function)} instead if using Guava 20.
-   */
-  public static <I, O> ListenableFuture<O> syncTransform(
-          ListenableFuture<I> input, Function<? super I, ? extends O> function) {
-    return Futures.transform(input, function);
-  }
-
-  /**
-   * @deprecated Use {@link Futures#transformAsync(ListenableFuture, AsyncFunction)}
-   */
-  @Deprecated
-  public static <I, O> ListenableFuture<O> asyncTransform(
-          ListenableFuture<I> input, AsyncFunction<? super I, ? extends O> function) {
-    return Futures.transformAsync(input, function);
+  public static ListenableFuture<JoinedResults> join(
+      final Executor executor,
+      final ListenableFuture<?>... inputs) {
+    return join(executor, Arrays.asList(inputs));
   }
 
   /**
