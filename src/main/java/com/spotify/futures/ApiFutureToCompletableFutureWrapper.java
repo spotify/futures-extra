@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 Spotify AB
+ * Copyright (c) 2013-2018 Spotify AB
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,21 +18,20 @@ package com.spotify.futures;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.api.core.ApiFuture;
-import com.google.common.util.concurrent.Uninterruptibles;
-import java.util.concurrent.CancellationException;
+import com.google.api.core.ApiFutureCallback;
+import com.google.api.core.ApiFutures;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
-public class ApiFutureToCompletableFutureWrapper<V>
+class ApiFutureToCompletableFutureWrapper<V>
     extends CompletableFuture<V>
-    implements Runnable {
+    implements ApiFutureCallback<V> {
 
   private final ApiFuture<V> future;
 
-  ApiFutureToCompletableFutureWrapper(final ApiFuture<V> future, final Executor executor) {
+  ApiFutureToCompletableFutureWrapper(final ApiFuture<V> future, Executor executor) {
     this.future = checkNotNull(future, "future");
-    this.future.addListener(this, executor);
+    ApiFutures.addCallback(future, this, executor);
   }
 
   @Override
@@ -41,20 +40,17 @@ public class ApiFutureToCompletableFutureWrapper<V>
     return super.cancel(mayInterruptIfRunning);
   }
 
-  public ApiFuture<V> unwrap() {
+  ApiFuture<V> unwrap() {
     return future;
   }
 
   @Override
-  public void run() {
-    try {
-      complete(Uninterruptibles.getUninterruptibly(future));
-    } catch (final ExecutionException e) {
-      completeExceptionally(e.getCause());
-    } catch (final CancellationException e) {
-      cancel(false);
-    } catch (final RuntimeException e) {
-      completeExceptionally(e);
-    }
+  public void onSuccess(final V result) {
+    complete(result);
+  }
+
+  @Override
+  public void onFailure(final Throwable t) {
+    completeExceptionally(t);
   }
 }

@@ -140,8 +140,8 @@ public class CompletableFuturesExtraTest {
 
   @Test
   public void testApiFutureSuccess() throws ExecutionException, InterruptedException {
-    SettableApiFuture<String> apiFuture = SettableApiFuture.create();
-    CompletableFuture<String> completable = toCompletableFuture(apiFuture);
+    final SettableApiFuture<String> apiFuture = SettableApiFuture.create();
+    final CompletableFuture<String> completable = toCompletableFuture(apiFuture);
     assertThat(completable.isDone(), is(false));
     apiFuture.set("done");
     assertThat(completable.isDone(), is(true));
@@ -150,8 +150,8 @@ public class CompletableFuturesExtraTest {
 
   @Test
   public void testApiFutureFailure() throws ExecutionException, InterruptedException {
-    SettableApiFuture<String> apiFuture = SettableApiFuture.create();
-    CompletableFuture<String> completable = toCompletableFuture(apiFuture);
+    final SettableApiFuture<String> apiFuture = SettableApiFuture.create();
+    final CompletableFuture<String> completable = toCompletableFuture(apiFuture);
     assertThat(completable.isDone(), is(false));
     final Exception failure = new Exception("failure");
     apiFuture.setException(failure);

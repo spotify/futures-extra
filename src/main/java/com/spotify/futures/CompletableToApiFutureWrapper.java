@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 Spotify AB
+ * Copyright (c) 2013-2018 Spotify AB
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,7 +22,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiConsumer;
 
-public class CompletableToApiFutureWrapper<V> extends AbstractFuture<V>
+class CompletableToApiFutureWrapper<V> extends AbstractFuture<V>
     implements ApiFuture<V>, BiConsumer<V, Throwable> {
 
   private final CompletionStage<V> future;
@@ -33,6 +33,12 @@ public class CompletableToApiFutureWrapper<V> extends AbstractFuture<V>
 
   public CompletableFuture<V> unwrap() {
     return future.toCompletableFuture();
+  }
+
+  @Override
+  public boolean cancel(final boolean mayInterruptIfRunning) {
+    future.toCompletableFuture().cancel(mayInterruptIfRunning);
+    return super.cancel(mayInterruptIfRunning);
   }
 
   @Override
