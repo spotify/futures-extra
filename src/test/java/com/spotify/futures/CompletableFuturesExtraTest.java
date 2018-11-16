@@ -14,6 +14,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutureCallback;
+import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -40,6 +42,7 @@ public class CompletableFuturesExtraTest {
   public ExpectedException exception = ExpectedException.none();
 
   @Mock FutureCallback<String> callback;
+  @Mock ApiFutureCallback<String> apiFutureCallback;
 
   private final SettableFuture<String> settable = SettableFuture.create();
   private final ListenableFuture<String> listenable = settable;
@@ -108,7 +111,7 @@ public class CompletableFuturesExtraTest {
   @Test
   public void testToCompletableFutureFromApiFutureUnwrap() {
     final ApiFuture<String> apiFuture = SettableApiFuture.create();
-    CompletableFuture<String> wrapped = toCompletableFuture(apiFuture);
+    final CompletableFuture<String> wrapped = toCompletableFuture(apiFuture);
     final ApiFuture<String> unwrapped = toApiFuture(wrapped);
     assertThat(unwrapped, is(sameInstance(apiFuture)));
   }
@@ -170,6 +173,33 @@ public class CompletableFuturesExtraTest {
     completable.completeExceptionally(failure);
     assertThat(wrapped.isDone(), is(true));
     verify(callback).onFailure(failure);
+    exception.expect(ExecutionException.class);
+    wrapped.get();
+  }
+
+  @Test
+  public void testToApiFutureSuccess() throws ExecutionException, InterruptedException {
+    final CompletableFuture<String> completable = new CompletableFuture<>();
+    final ApiFuture<String> wrapped = toApiFuture(completable);
+    ApiFutures.addCallback(wrapped, apiFutureCallback, MoreExecutors.directExecutor());
+    assertThat(wrapped.isDone(), is(false));
+    final String value = "value";
+    completable.complete(value);
+    assertThat(wrapped.isDone(), is(true));
+    wrapped.get();
+    assertThat(wrapped.get(), is(value));
+  }
+
+  @Test
+  public void testToApiFutureFailure() throws ExecutionException, InterruptedException {
+    final CompletableFuture<String> completable = new CompletableFuture<>();
+    final ApiFuture<String> wrapped = toApiFuture(completable);
+    ApiFutures.addCallback(wrapped, apiFutureCallback, MoreExecutors.directExecutor());
+    assertThat(wrapped.isDone(), is(false));
+    final Exception failure = new Exception("failure");
+    completable.completeExceptionally(failure);
+    assertThat(wrapped.isDone(), is(true));
+    verify(apiFutureCallback).onFailure(failure);
     exception.expect(ExecutionException.class);
     wrapped.get();
   }

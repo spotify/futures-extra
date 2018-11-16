@@ -22,13 +22,15 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiConsumer;
 
-class CompletableToApiFutureWrapper<V> extends AbstractFuture<V>
+class CompletableToApiFutureWrapper<V>
+    extends AbstractFuture<V>
     implements ApiFuture<V>, BiConsumer<V, Throwable> {
 
   private final CompletionStage<V> future;
 
   CompletableToApiFutureWrapper(final CompletionStage<V> future) {
     this.future = future;
+    this.future.whenComplete(this);
   }
 
   public CompletableFuture<V> unwrap() {
