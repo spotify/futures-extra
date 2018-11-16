@@ -69,6 +69,11 @@
       <artifactId>guava</artifactId>
       <version>26.0-jre</version>
     </dependency>
+    <dependency>
+      <groupId>com.google.api</groupId>
+      <artifactId>gax</artifactId>
+      <version>1.35.0</version>
+    </dependency>
 
     <!-- test dependencies -->
     <dependency>
