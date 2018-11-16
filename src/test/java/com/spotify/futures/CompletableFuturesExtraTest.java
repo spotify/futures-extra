@@ -1,25 +1,6 @@
 package com.spotify.futures;
 
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.MoreExecutors;
-import com.google.common.util.concurrent.SettableFuture;
-
-import java.util.concurrent.CompletionException;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutionException;
-import java.util.function.BiConsumer;
-
+import static com.spotify.futures.CompletableFuturesExtra.toApiFuture;
 import static com.spotify.futures.CompletableFuturesExtra.toCompletableFuture;
 import static com.spotify.futures.CompletableFuturesExtra.toListenableFuture;
 import static org.hamcrest.Matchers.is;
@@ -31,6 +12,26 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+
+import com.google.api.core.ApiFuture;
+import com.google.api.core.SettableApiFuture;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.SettableFuture;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
+import java.util.function.BiConsumer;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CompletableFuturesExtraTest {
@@ -97,7 +98,23 @@ public class CompletableFuturesExtraTest {
   }
 
   @Test
-  public void testException() throws Exception {
+  public void testToApiFutureUnwrap() {
+    final CompletableFuture<String> completable = new CompletableFuture<>();
+    final ApiFuture<String> wrapped = toApiFuture(completable);
+    final CompletableFuture<String> unwrapped = toCompletableFuture(wrapped);
+    assertThat(unwrapped, is(sameInstance(completable)));
+  }
+
+  @Test
+  public void testToCompletableFutureFromApiFutureUnwrap() {
+    final ApiFuture<String> apiFuture = SettableApiFuture.create();
+    CompletableFuture<String> wrapped = toCompletableFuture(apiFuture);
+    final ApiFuture<String> unwrapped = toApiFuture(wrapped);
+    assertThat(unwrapped, is(sameInstance(apiFuture)));
+  }
+
+  @Test
+  public void testExceptionListenableFuture() throws Exception {
     final CompletableFuture<Object> future = new CompletableFuture<>();
     future.completeExceptionally(new IllegalStateException());
     final ListenableFuture<Object> converted = toListenableFuture(future);
@@ -119,6 +136,28 @@ public class CompletableFuturesExtraTest {
     assertThat(listenable.isDone(), is(true));
     verify(callback).onSuccess("done");
     assertThat(listenable.get(), is("done"));
+  }
+
+  @Test
+  public void testApiFutureSuccess() throws ExecutionException, InterruptedException {
+    SettableApiFuture<String> apiFuture = SettableApiFuture.create();
+    CompletableFuture<String> completable = toCompletableFuture(apiFuture);
+    assertThat(completable.isDone(), is(false));
+    apiFuture.set("done");
+    assertThat(completable.isDone(), is(true));
+    assertThat(completable.get(), is("done"));
+  }
+
+  @Test
+  public void testApiFutureFailure() throws ExecutionException, InterruptedException {
+    SettableApiFuture<String> apiFuture = SettableApiFuture.create();
+    CompletableFuture<String> completable = toCompletableFuture(apiFuture);
+    assertThat(completable.isDone(), is(false));
+    final Exception failure = new Exception("failure");
+    apiFuture.setException(failure);
+    assertThat(completable.isDone(), is(true));
+    exception.expect(ExecutionException.class);
+    completable.get();
   }
 
   @Test
