@@ -19,6 +19,7 @@ Guava's ListenableFuture class
 ### Runtime dependencies
 * Java 8 or higher
 * Guava 21.0 or higher
+* Google [`api-common`](https://mvnrepository.com/artifact/com.google.api/api-common) from `com.google.api`
 
 ### Usage
 
@@ -28,7 +29,7 @@ To import it with maven, use this:
     <dependency>
       <groupId>com.spotify</groupId>
       <artifactId>futures-extra</artifactId>
-      <version>4.0.0</version>
+      <version>4.1.0</version>
     </dependency>
 
 ### Examples
@@ -198,4 +199,18 @@ CompletableFuture<V> completable = CompletableFuturesExtra.toCompletableFuture(l
 ```java
 CompletableFuture<V> completable = getFuture();
 ListenableFuture<V> listenable = CompletableFuturesExtra.toListenableFuture(completable);
+```
+
+* From `ApiFuture` to JDK 8 `CompletableFuture` (especially useful when using [Google client libraries](https://github.com/googleapis/google-cloud-java/tree/master/google-cloud-clients))
+
+```java
+ApiFuture<V> apiFuture = getFuture();
+CompletableFuture<V> completable = CompletableFuturesExtra.toCompletableFuture(apiFuture);
+```
+
+* From JDK 8 `CompletableFuture` to `ApiFuture` (especially useful when using [Google client libraries](https://github.com/googleapis/google-cloud-java/tree/master/google-cloud-clients))
+
+```java
+CompletableFuture<V> completable = getFuture();
+ApiFuture<V> apiFuture = CompletableFuturesExtra.toApiFuture(completable);
 ```
