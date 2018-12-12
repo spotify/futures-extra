@@ -28,6 +28,6 @@ Optional:
     </profile>
   </profiles>
 
-$ mvn release:clean release:prepare
-$ mvn release:perform
+$ mvn -B release:clean release:prepare
+$ mvn -B release:perform
 
