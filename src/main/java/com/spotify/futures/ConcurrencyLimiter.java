@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Spotify AB
+ * Copyright (c) 2013-2018 Spotify AB
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,6 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package com.spotify.futures;
 
 import com.google.common.base.Preconditions;
@@ -32,7 +33,7 @@ import java.util.concurrent.Semaphore;
  * asynchronous work to only run up to a specific limit of work
  * concurrently.
  *
- * This is a threadsafe class.
+ * <p>This is a threadsafe class.
  */
 public final class ConcurrencyLimiter<T> implements FutureJobInvoker<T> {
 
@@ -54,6 +55,7 @@ public final class ConcurrencyLimiter<T> implements FutureJobInvoker<T> {
   }
 
   /**
+   * Create a {@code ConcurrencyLimiter} instance.
    *
    * @param executor the executor to run callables on.
    * @param maxConcurrency maximum number of futures in progress,
@@ -75,7 +77,7 @@ public final class ConcurrencyLimiter<T> implements FutureJobInvoker<T> {
    *          input function.
    *          This future will be immediately failed with
    *          {@link CapacityReachedException} if the soft queue size limit is exceeded.
-   * @throws {@link NullPointerException} if callable is null
+   * @throws NullPointerException if callable is null
    */
   @Override
   public ListenableFuture<T> add(Callable<? extends ListenableFuture<T>> callable) {
@@ -91,14 +93,15 @@ public final class ConcurrencyLimiter<T> implements FutureJobInvoker<T> {
   }
 
   /**
-   * @return the number of callables that are queued up and haven't started
-   *          yet.
+   * Return the number of callables that are queued up and haven't started yet.
+   * @return the number of callables that are queued up and haven't started yet.
    */
   public int numQueued() {
     return queue.size();
   }
 
   /**
+   * Return the number of currently active futures that have not yet completed.
    * @return the number of currently active futures that have not yet completed.
    */
   public int numActive() {
@@ -106,6 +109,7 @@ public final class ConcurrencyLimiter<T> implements FutureJobInvoker<T> {
   }
 
   /**
+   * Return the number of additional callables that can be queued before failing.
    * @return the number of additional callables that can be queued before failing.
    */
   public int remainingQueueCapacity() {
@@ -113,6 +117,7 @@ public final class ConcurrencyLimiter<T> implements FutureJobInvoker<T> {
   }
 
   /**
+   * Return the number of additional callables that can be run without queueing.
     * @return the number of additional callables that can be run without queueing.
     */
   public int remainingActiveCapacity() {
@@ -120,7 +125,9 @@ public final class ConcurrencyLimiter<T> implements FutureJobInvoker<T> {
   }
 
   /**
-   * Does one of two things:
+   * Return a {@code Job} with acquired permit, {@code null} otherwise.
+   *
+   * <p>Does one of two things:
    * 1) return a job and acquire a permit from the semaphore
    * 2) return null and does not acquire a permit from the semaphore
    */
@@ -188,7 +195,7 @@ public final class ConcurrencyLimiter<T> implements FutureJobInvoker<T> {
     private final Callable<? extends ListenableFuture<T>> callable;
     private final SettableFuture<T> response;
 
-    public Job(Callable<? extends ListenableFuture<T>> callable, SettableFuture<T> response) {
+    Job(Callable<? extends ListenableFuture<T>> callable, SettableFuture<T> response) {
       this.callable = callable;
       this.response = response;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Spotify AB
+ * Copyright (c) 2013-2018 Spotify AB
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,6 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package com.spotify.futures;
 
 import com.google.common.util.concurrent.AbstractFuture;
@@ -50,14 +51,14 @@ class CompletableToListenableFutureWrapper<V>
       if (throwable instanceof CancellationException) {
         cancel(false);
       } else {
-        setException(unwrap(throwable));
+        setException(unwrapThrowable(throwable));
       }
     } else {
       set(v);
     }
   }
 
-  static Throwable unwrap(Throwable throwable) {
+  static Throwable unwrapThrowable(Throwable throwable) {
     // Don't go too deep in case there is recursive exceptions
     for (int i = 0; i < 100; i++) {
       if (throwable instanceof CompletionException) {

@@ -208,6 +208,36 @@
           <aggregate>true</aggregate>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>3.0.0</version>
+        <configuration>
+          <configLocation>checkstyle.xml</configLocation>
+          <consoleOutput>true</consoleOutput>
+          <failOnViolation>true</failOnViolation>
+          <failsOnError>true</failsOnError>
+          <maxAllowedViolations>0</maxAllowedViolations>
+          <!-- checkstyle does not support JPMS yet -->
+          <excludes>**/module-info.java</excludes>
+        </configuration>
+        <executions>
+          <execution>
+            <id>checkstyle</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>com.puppycrawl.tools</groupId>
+            <artifactId>checkstyle</artifactId>
+            <version>8.15</version>
+          </dependency>
+        </dependencies>
+      </plugin>
     </plugins>
   </build>
 
