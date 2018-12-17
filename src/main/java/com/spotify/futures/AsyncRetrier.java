@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 Spotify AB
+ * Copyright (c) 2013-2018 Spotify AB
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,7 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package com.spotify.futures;
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -23,19 +26,15 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
-
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * A helper for retrying asynchronous calls.
  *
- * It implements retries up to a specified limit with a constant delay between each retry.
- *
- * TODO: Add support for specifying backoff behavior
+ * <p>It implements retries up to a specified limit with a constant delay between each retry.
  */
+// TODO: Add support for specifying backoff behavior
 public final class AsyncRetrier {
 
   public static final long DEFAULT_DELAY_MILLIS = 0;
@@ -70,6 +69,9 @@ public final class AsyncRetrier {
     return retry(code, retries, delay, timeUnit, Predicates.<T>alwaysTrue());
   }
 
+  /**
+   * Retry {@code code} up to {@code retries} times.
+   */
   public <T> ListenableFuture<T> retry(final Supplier<ListenableFuture<T>> code,
                                        final int retries,
                                        final long delay,
@@ -121,9 +123,10 @@ public final class AsyncRetrier {
                                  final Predicate<T> retryCondition,
                                  Throwable t) {
     if (retries > 0) {
-      executorService.schedule(() ->
-          startRetry(future, code, retries - 1, delay, timeUnit, retryCondition),
-          delay, timeUnit);
+      executorService.schedule(
+          () -> startRetry(future, code, retries - 1, delay, timeUnit, retryCondition),
+          delay,
+          timeUnit);
     } else {
       future.setException(t);
     }

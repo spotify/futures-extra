@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Spotify AB
+ * Copyright (c) 2013-2018 Spotify AB
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,6 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package com.spotify.futures;
 
 import com.google.api.core.ApiFuture;
@@ -28,22 +29,6 @@ public class CompletableFuturesExtra {
 
   private CompletableFuturesExtra() {
     throw new AssertionError();
-  }
-
-  /**
-   * Wrap a {@link ListenableFuture} in a {@link CompletableFuture}. The returned future will
-   * complete with the same result or failure as the original future. Completing the returned
-   * future does not complete the original future.
-   *
-   * @param future The {@link ListenableFuture} to wrap in a {@link CompletableFuture}.
-   * @return A {@link CompletableFuture} that completes when the original future completes.
-   */
-  public static <V> CompletableFuture<V> toCompletableFuture(
-      ListenableFuture<V> future) {
-    if (future instanceof CompletableToListenableFutureWrapper) {
-      return ((CompletableToListenableFutureWrapper<V>) future).unwrap();
-    }
-    return new ListenableToCompletableFutureWrapper<>(future);
   }
 
   /**
@@ -71,6 +56,22 @@ public class CompletableFuturesExtra {
       return ((ListenableToCompletableFutureWrapper<V>) future).unwrap();
     }
     return new CompletableToListenableFutureWrapper<>(future);
+  }
+
+  /**
+   * Wrap a {@link ListenableFuture} in a {@link CompletableFuture}. The returned future will
+   * complete with the same result or failure as the original future. Completing the returned
+   * future does not complete the original future.
+   *
+   * @param future The {@link ListenableFuture} to wrap in a {@link CompletableFuture}.
+   * @return A {@link CompletableFuture} that completes when the original future completes.
+   */
+  public static <V> CompletableFuture<V> toCompletableFuture(
+      ListenableFuture<V> future) {
+    if (future instanceof CompletableToListenableFutureWrapper) {
+      return ((CompletableToListenableFutureWrapper<V>) future).unwrap();
+    }
+    return new ListenableToCompletableFutureWrapper<>(future);
   }
 
   /**
@@ -135,14 +136,14 @@ public class CompletableFuturesExtra {
    * {@code null} if none) of this stage as arguments, and the
    * function's result is used to complete the returned stage.
    *
-   * This differs from
+   * <p>This differs from
    * {@link java.util.concurrent.CompletionStage#handle(java.util.function.BiFunction)}
    * in that the function should return a {@link java.util.concurrent.CompletionStage} rather than
    * the value directly.
    *
    * @param stage the {@link CompletionStage} to compose
    * @param fn the function to use to compute the value of the
-   * returned {@link CompletionStage}
+   *        returned {@link CompletionStage}
    * @param <U> the function's return type
    * @return the new {@link CompletionStage}
    */
@@ -159,15 +160,15 @@ public class CompletableFuturesExtra {
    * completes normally, then the returned stage also completes
    * normally with the same value.
    *
-   * This differs from
+   * <p>This differs from
    * {@link java.util.concurrent.CompletionStage#exceptionally(java.util.function.Function)}
    * in that the function should return a {@link java.util.concurrent.CompletionStage} rather than
    * the value directly.
    *
    * @param stage the {@link CompletionStage} to compose
    * @param fn the function to use to compute the value of the
-   * returned {@link CompletionStage} if this stage completed
-   * exceptionally
+   *        returned {@link CompletionStage} if this stage completed
+   *        exceptionally
    * @return the new {@link CompletionStage}
    */
   public static <T> CompletionStage<T> exceptionallyCompose(

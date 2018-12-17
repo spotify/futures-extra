@@ -13,6 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package com.spotify.futures;
 
 import com.google.api.core.ApiFuture;
@@ -49,7 +50,7 @@ class CompletableToApiFutureWrapper<V>
       if (throwable instanceof CancellationException) {
         cancel(false);
       } else {
-        setException(CompletableToListenableFutureWrapper.unwrap(throwable));
+        setException(CompletableToListenableFutureWrapper.unwrapThrowable(throwable));
       }
     } else {
       set(v);

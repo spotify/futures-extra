@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Spotify AB
+ * Copyright (c) 2013-2018 Spotify AB
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,6 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package com.spotify.futures;
 
 import com.google.common.base.Function;
@@ -82,13 +83,13 @@ public class FuturesExtra {
    * This takes two futures of type {@link A} and {@link B} and works like
    * a valve on {@link A}, with validation executed on {@link B}.
    *
-   * Returns a future with the result of {@link A} that will wait for a
+   * <p>Returns a future with the result of {@link A} that will wait for a
    * condition on {@link B} to be validated first. Both futures can run in
    * parallel. If the condition fails validation, the {@link A} future will
    * be cancelled by a call to {@link ListenableFuture#cancel(boolean)} with
    * {@code false}.
    *
-   * This is useful for when you want to optimistically run a time consuming
+   * <p>This is useful for when you want to optimistically run a time consuming
    * path while validating if it should be computed or not by a parallel
    * async computation.
    *
@@ -258,7 +259,7 @@ public class FuturesExtra {
    */
   public interface Function2<Z, A, B> {
     /**
-     * Combine the inputs into the returned output
+     * Combine the inputs into the returned output.
      *
      * @param a an input value
      * @param b an input value

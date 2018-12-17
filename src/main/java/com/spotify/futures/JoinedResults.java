@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Spotify AB
+ * Copyright (c) 2013-2018 Spotify AB
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,19 +13,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.spotify.futures;
 
-import java.util.List;
-import java.util.Map;
+package com.spotify.futures;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ListenableFuture;
+import java.util.List;
+import java.util.Map;
 
 /**
- * Contains references to a set of joined future values
+ * Contains references to a set of joined future values.
  */
 public final class JoinedResults {
   private final Map<ListenableFuture<?>, Object> futures;
@@ -36,7 +36,7 @@ public final class JoinedResults {
 
   /**
    * Gets a future value if it was part of the joined future values,
-   * else throws an illegal argument exception
+   * else throws an illegal argument exception.
    */
   public <T> T get(ListenableFuture<T> future) {
     Object value = futures.get(future);
@@ -55,7 +55,8 @@ public final class JoinedResults {
 
   static class Transform implements Function<List<Object>, JoinedResults> {
     private final List<? extends ListenableFuture<?>> futures;
-    public Transform(List<? extends ListenableFuture<?>> list) {
+
+    Transform(List<? extends ListenableFuture<?>> list) {
       futures = ImmutableList.copyOf(list);
     }
 
