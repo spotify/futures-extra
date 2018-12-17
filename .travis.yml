@@ -6,14 +6,12 @@ secure: "PESEMT6CyhKp6zq1JTZ4Lyp8OBTZsNXUzAQyTSSRUDnopk+PHPGHOIjHisRdesM3d2uxgpE
 language: java
 
 jdk:
-  - oraclejdk8
+  - oraclejdk11
 
 install:
   - mvn install -DskipTests=true -Dgpg.skip=true
 
-# Build using JDK 8 and then run tests for 8, 7 and 6.
 script:
-  - jdk_switcher use oraclejdk8
   - mvn test
 
 after_success:
