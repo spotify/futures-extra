@@ -14,6 +14,7 @@
  * the License.
  */
 module com.spotify.futures {
+  exports com.spotify.futures;
   /*
    * com.google.guava:guava,
    * dependency is optional in case only CompletionStage
