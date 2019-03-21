@@ -1,7 +1,6 @@
 package com.spotify.futures;
 
 import static com.spotify.futures.CompletableFuturesExtra.toApiFuture;
-import static com.spotify.futures.CompletableFuturesExtra.toCompletableFuture;
 import static com.spotify.futures.CompletableFuturesExtra.toListenableFuture;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
@@ -54,14 +53,14 @@ public class CompletableFuturesExtraTest {
 
   @Test
   public void testToCompletableFutureUnwrap() {
-    final CompletableFuture<String> wrapped = toCompletableFuture(listenable);
+    final CompletableFuture<String> wrapped = ListenableFuturesExtra.toCompletableFuture(listenable);
     final ListenableFuture<String> unwrapped = toListenableFuture(wrapped);
     assertThat(unwrapped, is(sameInstance(listenable)));
   }
 
   @Test
   public void testToCompletableFutureUnwrapWithStage() {
-    final CompletionStage<String> wrapped = toCompletableFuture(listenable);
+    final CompletionStage<String> wrapped = ListenableFuturesExtra.toCompletableFuture(listenable);
     final ListenableFuture<String> unwrapped = toListenableFuture(wrapped);
     assertThat(unwrapped, is(sameInstance(listenable)));
   }
@@ -69,7 +68,7 @@ public class CompletableFuturesExtraTest {
   @Test
   public void testToCompletableFutureSuccess() throws ExecutionException, InterruptedException {
     @SuppressWarnings("unchecked") final BiConsumer<String, Throwable> consumer = mock(BiConsumer.class);
-    final CompletableFuture<String> wrapped = toCompletableFuture(listenable);
+    final CompletableFuture<String> wrapped = ListenableFuturesExtra.toCompletableFuture(listenable);
     wrapped.whenComplete(consumer);
     assertThat(wrapped.isDone(), is(false));
     settable.set("done");
@@ -81,7 +80,7 @@ public class CompletableFuturesExtraTest {
   @Test
   public void testToCompletableFutureFailure() {
     @SuppressWarnings("unchecked") final BiConsumer<String, Throwable> consumer = mock(BiConsumer.class);
-    final CompletableFuture<String> wrapped = toCompletableFuture(listenable);
+    final CompletableFuture<String> wrapped = ListenableFuturesExtra.toCompletableFuture(listenable);
     wrapped.whenComplete(consumer);
     assertThat(wrapped.isDone(), is(false));
     final Exception failure = new Exception("failure");
@@ -96,7 +95,7 @@ public class CompletableFuturesExtraTest {
   public void testToListenableFutureUnwrap() {
     final CompletableFuture<String> completable = new CompletableFuture<>();
     final ListenableFuture<String> wrapped = toListenableFuture(completable);
-    final CompletableFuture<String> unwrapped = toCompletableFuture(wrapped);
+    final CompletableFuture<String> unwrapped = ListenableFuturesExtra.toCompletableFuture(wrapped);
     assertThat(unwrapped, is(sameInstance(completable)));
   }
 
@@ -104,14 +103,14 @@ public class CompletableFuturesExtraTest {
   public void testToApiFutureUnwrap() {
     final CompletableFuture<String> completable = new CompletableFuture<>();
     final ApiFuture<String> wrapped = toApiFuture(completable);
-    final CompletableFuture<String> unwrapped = toCompletableFuture(wrapped);
+    final CompletableFuture<String> unwrapped = ApiFuturesExtra.toCompletableFuture(wrapped);
     assertThat(unwrapped, is(sameInstance(completable)));
   }
 
   @Test
   public void testToCompletableFutureFromApiFutureUnwrap() {
     final ApiFuture<String> apiFuture = SettableApiFuture.create();
-    final CompletableFuture<String> wrapped = toCompletableFuture(apiFuture);
+    final CompletableFuture<String> wrapped = ApiFuturesExtra.toCompletableFuture(apiFuture);
     final ApiFuture<String> unwrapped = toApiFuture(wrapped);
     assertThat(unwrapped, is(sameInstance(apiFuture)));
   }
@@ -144,7 +143,7 @@ public class CompletableFuturesExtraTest {
   @Test
   public void testApiFutureSuccess() throws ExecutionException, InterruptedException {
     final SettableApiFuture<String> apiFuture = SettableApiFuture.create();
-    final CompletableFuture<String> completable = toCompletableFuture(apiFuture);
+    final CompletableFuture<String> completable = ApiFuturesExtra.toCompletableFuture(apiFuture);
     assertThat(completable.isDone(), is(false));
     apiFuture.set("done");
     assertThat(completable.isDone(), is(true));
@@ -154,7 +153,7 @@ public class CompletableFuturesExtraTest {
   @Test
   public void testApiFutureFailure() throws ExecutionException, InterruptedException {
     final SettableApiFuture<String> apiFuture = SettableApiFuture.create();
-    final CompletableFuture<String> completable = toCompletableFuture(apiFuture);
+    final CompletableFuture<String> completable = ApiFuturesExtra.toCompletableFuture(apiFuture);
     assertThat(completable.isDone(), is(false));
     final Exception failure = new Exception("failure");
     apiFuture.setException(failure);
@@ -398,7 +397,7 @@ public class CompletableFuturesExtraTest {
   @Test
   public void testCancelListenableFuture() throws Exception {
     final SettableFuture<Object> future = SettableFuture.create();
-    final CompletableFuture<Object> converted = toCompletableFuture(future);
+    final CompletableFuture<Object> converted = ListenableFuturesExtra.toCompletableFuture(future);
     future.cancel(false);
     assertTrue(converted.isDone());
     assertTrue(converted.isCancelled());
