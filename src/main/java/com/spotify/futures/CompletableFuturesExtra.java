@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2018 Spotify AB
+ * Copyright (c) 2013-2019 Spotify AB
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,7 +18,6 @@ package com.spotify.futures;
 
 import com.google.api.core.ApiFuture;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.MoreExecutors;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Executor;
@@ -63,40 +62,42 @@ public class CompletableFuturesExtra {
    * complete with the same result or failure as the original future. Completing the returned
    * future does not complete the original future.
    *
+   * @deprecated - see {@link ListenableFuturesExtra#toCompletableFuture(ListenableFuture)}
+   *
    * @param future The {@link ListenableFuture} to wrap in a {@link CompletableFuture}.
    * @return A {@link CompletableFuture} that completes when the original future completes.
    */
-  public static <V> CompletableFuture<V> toCompletableFuture(
-      ListenableFuture<V> future) {
-    if (future instanceof CompletableToListenableFutureWrapper) {
-      return ((CompletableToListenableFutureWrapper<V>) future).unwrap();
-    }
-    return new ListenableToCompletableFutureWrapper<>(future);
+  @Deprecated
+  public static <V> CompletableFuture<V> toCompletableFuture(ListenableFuture<V> future) {
+    return ListenableFuturesExtra.toCompletableFuture(future);
   }
 
   /**
    * Converts an {@link ApiFuture} to a {@link CompletableFuture}.
    *
+   * @deprecated - see {@link ApiFuturesExtra#toCompletableFuture(ApiFuture)}
+   *
    * @param future the {@link ApiFuture} to wrap.
    * @return a {@link CompletableFuture} that completes when the original future completes.
    */
+  @Deprecated
   public static <V> CompletableFuture<V> toCompletableFuture(ApiFuture<V> future) {
-    return toCompletableFuture(future, MoreExecutors.directExecutor());
+    return ApiFuturesExtra.toCompletableFuture(future);
   }
 
   /**
    * Converts an {@link ApiFuture} to a {@link CompletableFuture}.
+   *
+   * @deprecated - see {@link ApiFuturesExtra#toCompletableFuture(ApiFuture)}
    *
    * @param future the {@link ApiFuture} to wrap.
    * @param executor the executor where the listener is running.
    * @return a {@link CompletableFuture} that completes when the original future completes.
    */
+  @Deprecated
   public static <V> CompletableFuture<V> toCompletableFuture(ApiFuture<V> future,
                                                              Executor executor) {
-    if (future instanceof CompletableToApiFutureWrapper) {
-      return ((CompletableToApiFutureWrapper<V>) future).unwrap();
-    }
-    return new ApiFutureToCompletableFutureWrapper<>(future, executor);
+    return ApiFuturesExtra.toCompletableFuture(future, executor);
   }
 
   /**
