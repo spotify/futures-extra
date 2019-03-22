@@ -29,7 +29,7 @@ To import it with maven, use this:
     <dependency>
       <groupId>com.spotify</groupId>
       <artifactId>futures-extra</artifactId>
-      <version>4.1.2</version>
+      <version>4.2.0</version>
     </dependency>
 
 ### Examples
@@ -191,7 +191,7 @@ Throwable exc = FuturesExtra.getException(future);
 
 ```java
 ListenableFuture<V> listenable = getFuture();
-CompletableFuture<V> completable = CompletableFuturesExtra.toCompletableFuture(listenable);
+CompletableFuture<V> completable = ListenableFuturesExtra.toCompletableFuture(listenable);
 ```
 
 * From JDK 8 `CompletableFuture` To `ListenableFuture`
@@ -205,7 +205,7 @@ ListenableFuture<V> listenable = CompletableFuturesExtra.toListenableFuture(comp
 
 ```java
 ApiFuture<V> apiFuture = getFuture();
-CompletableFuture<V> completable = CompletableFuturesExtra.toCompletableFuture(apiFuture);
+CompletableFuture<V> completable = ApiFuturesExtra.toCompletableFuture(apiFuture);
 ```
 
 * From JDK 8 `CompletableFuture` to `ApiFuture` (especially useful when using [Google client libraries](https://github.com/googleapis/google-cloud-java/tree/master/google-cloud-clients))
