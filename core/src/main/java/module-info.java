@@ -18,13 +18,7 @@ module com.spotify.futures {
   /*
    * com.google.guava:guava,
    * dependency is optional in case only CompletionStage
-   * and/or ApiFuture are required:
+   * is required:
    */
   requires static com.google.common;
-  /*
-   * com.google.api:api-common,
-   * dependency is optional in case only CompletionStage
-   * and/or ListenableFuture are required:
-   */
-  requires static api.common;
 }

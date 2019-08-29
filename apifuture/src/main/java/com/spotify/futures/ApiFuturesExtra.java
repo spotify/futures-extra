@@ -17,9 +17,9 @@
 package com.spotify.futures;
 
 import com.google.api.core.ApiFuture;
-import com.google.common.util.concurrent.MoreExecutors;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Executor;
 
 public class ApiFuturesExtra {
@@ -30,7 +30,7 @@ public class ApiFuturesExtra {
    * @return a {@link CompletableFuture} that completes when the original future completes.
    */
   public static <V> CompletableFuture<V> toCompletableFuture(ApiFuture<V> future) {
-    return toCompletableFuture(future, MoreExecutors.directExecutor());
+    return toCompletableFuture(future, Runnable::run);
   }
 
   /**
@@ -46,6 +46,20 @@ public class ApiFuturesExtra {
       return ((CompletableToApiFutureWrapper<V>) future).unwrap();
     }
     return new ApiFutureToCompletableFutureWrapper<>(future, executor);
+  }
+
+  /**
+   * Wrap a {@link CompletionStage} in a {@link ApiFuture}. The returned future will
+   * complete with the same result or failure as the original future.
+   *
+   * @param future The {@link CompletionStage} to wrap in a {@link ApiFuture}.
+   * @return A {@link ApiFuture} that completes when the original future completes.
+   */
+  public static <V> ApiFuture<V> toApiFuture(CompletionStage<V> future) {
+    if (future instanceof ApiFutureToCompletableFutureWrapper) {
+      return ((ApiFutureToCompletableFutureWrapper<V>) future).unwrap();
+    }
+    return new CompletableToApiFutureWrapper<>(future);
   }
 
 }

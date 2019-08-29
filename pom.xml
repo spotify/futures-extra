@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.spotify</groupId>
-  <version>4.2.1-SNAPSHOT</version>
-  <artifactId>futures-extra</artifactId>
-  <packaging>jar</packaging>
 
+  <groupId>com.spotify</groupId>
+  <artifactId>futures-extra</artifactId>
+  <version>4.2.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
   <name>futures-extra</name>
 
   <properties>
@@ -15,7 +15,7 @@
   <parent>
     <groupId>org.sonatype.oss</groupId>
     <artifactId>oss-parent</artifactId>
-    <version>7</version>
+    <version>9</version>
   </parent>
 
   <scm>
@@ -23,6 +23,11 @@
     <developerConnection>scm:git:git@github.com:spotify/futures-extra.git</developerConnection>
     <url>scm:https://github.com/spotify/futures-extra/</url>
   </scm>
+
+  <modules>
+    <module>core</module>
+    <module>apifuture</module>
+  </modules>
 
   <licenses>
     <license>
@@ -62,41 +67,6 @@
       <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
     </repository>
   </distributionManagement>
-
-  <dependencies>
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>26.0-jre</version>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>com.google.api</groupId>
-      <artifactId>api-common</artifactId>
-      <version>1.7.0</version>
-      <optional>true</optional>
-    </dependency>
-
-    <!-- test dependencies -->
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.12</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
-      <version>1.9.5</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jmock</groupId>
-      <artifactId>jmock</artifactId>
-      <version>2.6.0</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
 
   <build>
     <plugins>
@@ -240,5 +210,4 @@
       </plugin>
     </plugins>
   </build>
-
 </project>

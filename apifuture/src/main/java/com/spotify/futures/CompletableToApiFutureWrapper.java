@@ -16,15 +16,16 @@
 
 package com.spotify.futures;
 
+import com.google.api.core.AbstractApiFuture;
 import com.google.api.core.ApiFuture;
-import com.google.common.util.concurrent.AbstractFuture;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiConsumer;
 
 class CompletableToApiFutureWrapper<V>
-    extends AbstractFuture<V>
+    extends AbstractApiFuture<V>
     implements ApiFuture<V>, BiConsumer<V, Throwable> {
 
   private final CompletionStage<V> future;
@@ -50,10 +51,23 @@ class CompletableToApiFutureWrapper<V>
       if (throwable instanceof CancellationException) {
         cancel(false);
       } else {
-        setException(CompletableToListenableFutureWrapper.unwrapThrowable(throwable));
+        setException(unwrapThrowable(throwable));
       }
     } else {
       set(v);
     }
   }
+
+  static Throwable unwrapThrowable(Throwable throwable) {
+    // Don't go too deep in case there is recursive exceptions
+    for (int i = 0; i < 100; i++) {
+      if (throwable instanceof CompletionException) {
+        throwable = throwable.getCause();
+      } else {
+        break;
+      }
+    }
+    return throwable;
+  }
+
 }

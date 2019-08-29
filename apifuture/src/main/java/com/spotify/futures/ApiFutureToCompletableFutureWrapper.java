@@ -16,8 +16,6 @@
 
 package com.spotify.futures;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
@@ -31,7 +29,10 @@ class ApiFutureToCompletableFutureWrapper<V>
   private final ApiFuture<V> future;
 
   ApiFutureToCompletableFutureWrapper(final ApiFuture<V> future, Executor executor) {
-    this.future = checkNotNull(future, "future");
+    if (future == null) {
+      throw new IllegalArgumentException("future must not be null");
+    }
+    this.future = future;
     ApiFutures.addCallback(future, this, executor);
   }
 
