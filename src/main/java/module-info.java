@@ -26,5 +26,5 @@ module com.spotify.futures {
    * dependency is optional in case only CompletionStage
    * and/or ListenableFuture are required:
    */
-  requires static api.common;
+  requires static com.google.api.apicommon;
 }
