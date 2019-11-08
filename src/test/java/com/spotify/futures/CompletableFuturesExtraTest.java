@@ -1,5 +1,6 @@
 package com.spotify.futures;
 
+import static com.spotify.futures.CompletableFuturesExtra.exceptionallyCompletedFuture;
 import static com.spotify.futures.CompletableFuturesExtra.toApiFuture;
 import static com.spotify.futures.CompletableFuturesExtra.toListenableFuture;
 import static org.hamcrest.Matchers.is;
@@ -233,6 +234,36 @@ public class CompletableFuturesExtraTest {
   public void testGetCompletedFails() throws Exception {
     final CompletionStage<String> future = new CompletableFuture<>();
     CompletableFuturesExtra.getCompleted(future.toCompletableFuture());
+    fail();
+  }
+
+  @Test(expected = CompletionException.class)
+  public void testGetCompletedFailsHasException() throws Exception {
+    final CompletionStage<String> future = CompletableFuturesExtra.exceptionallyCompletedFuture(new RuntimeException());
+    CompletableFuturesExtra.getCompleted(future.toCompletableFuture());
+    fail();
+  }
+
+  @Test
+  public void testGetCompletedExceptionally() throws Exception {
+    final Exception exception = new Exception();
+    final CompletionStage<String> future = exceptionallyCompletedFuture(exception);
+    Throwable actual = CompletableFuturesExtra.getCompletedException(future);
+    assertEquals(CompletionException.class, actual.getClass());
+    assertEquals(exception, actual.getCause());
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void testGetCompletedExceptionallyFails() throws Exception {
+    final CompletionStage<String> future = new CompletableFuture<>();
+    CompletableFuturesExtra.getCompleted(future.toCompletableFuture());
+    fail();
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void testGetCompletedExceptionallyFailsHasValue() throws Exception {
+    final CompletionStage<String> future = CompletableFuture.completedFuture("value");
+    CompletableFuturesExtra.getCompletedException(future.toCompletableFuture());
     fail();
   }
 

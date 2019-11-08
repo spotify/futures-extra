@@ -18,7 +18,10 @@ package com.spotify.futures;
 
 import com.google.api.core.ApiFuture;
 import com.google.common.util.concurrent.ListenableFuture;
+
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
@@ -201,6 +204,27 @@ public class CompletableFuturesExtra {
     CompletableFuture<T> future = stage.toCompletableFuture();
     checkCompleted(future);
     return future.join();
+  }
+
+  /**
+   * Get the exception from an exceptionally completed stage.
+   *
+   * @param stage a completed {@link CompletionStage}.
+   * @return the exception of the stage if it has one.
+   * @throws IllegalStateException if the stage is not completed, or not completed exceptionally.
+   */
+  public static Throwable getCompletedException(CompletionStage<?> stage) {
+    CompletableFuture<?> future = stage.toCompletableFuture();
+    checkCompleted(future);
+    if (!future.isCompletedExceptionally()) {
+      throw new IllegalStateException("future was not completed exceptionally");
+    }
+    try {
+      future.join();
+      throw new IllegalStateException("Unreachable");
+    } catch (CompletionException | CancellationException e) {
+      return e;
+    }
   }
 
   /**
