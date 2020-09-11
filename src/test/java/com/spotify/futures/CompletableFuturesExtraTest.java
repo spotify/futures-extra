@@ -147,6 +147,7 @@ public class CompletableFuturesExtraTest {
     final CompletableFuture<String> completable = ApiFuturesExtra.toCompletableFuture(apiFuture);
     assertThat(completable.isDone(), is(false));
     apiFuture.set("done");
+    Thread.sleep(200);
     assertThat(completable.isDone(), is(true));
     assertThat(completable.get(), is("done"));
   }
@@ -158,6 +159,7 @@ public class CompletableFuturesExtraTest {
     assertThat(completable.isDone(), is(false));
     final Exception failure = new Exception("failure");
     apiFuture.setException(failure);
+    Thread.sleep(200);
     assertThat(completable.isDone(), is(true));
     exception.expect(ExecutionException.class);
     completable.get();

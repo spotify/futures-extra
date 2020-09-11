@@ -18,11 +18,17 @@ package com.spotify.futures;
 
 import com.google.api.core.ApiFuture;
 import com.google.common.util.concurrent.MoreExecutors;
-
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ForkJoinPool;
 
 public class ApiFuturesExtra {
+  private static final boolean USE_COMMON_POOL = (ForkJoinPool.getCommonPoolParallelism() > 1);
+
+  /** Default executor -- ForkJoinPool.commonPool() unless it cannot support parallelism. */
+  private static final Executor ASYNC_POOL =
+      USE_COMMON_POOL ? ForkJoinPool.commonPool() : MoreExecutors.directExecutor();
+
   /**
    * Converts an {@link ApiFuture} to a {@link CompletableFuture}.
    *
@@ -30,7 +36,7 @@ public class ApiFuturesExtra {
    * @return a {@link CompletableFuture} that completes when the original future completes.
    */
   public static <V> CompletableFuture<V> toCompletableFuture(ApiFuture<V> future) {
-    return toCompletableFuture(future, MoreExecutors.directExecutor());
+    return toCompletableFuture(future, ASYNC_POOL);
   }
 
   /**
@@ -40,12 +46,11 @@ public class ApiFuturesExtra {
    * @param executor the executor where the listener is running.
    * @return a {@link CompletableFuture} that completes when the original future completes.
    */
-  public static <V> CompletableFuture<V> toCompletableFuture(ApiFuture<V> future,
-                                                             Executor executor) {
+  public static <V> CompletableFuture<V> toCompletableFuture(
+      ApiFuture<V> future, Executor executor) {
     if (future instanceof CompletableToApiFutureWrapper) {
       return ((CompletableToApiFutureWrapper<V>) future).unwrap();
     }
     return new ApiFutureToCompletableFutureWrapper<>(future, executor);
   }
-
 }
