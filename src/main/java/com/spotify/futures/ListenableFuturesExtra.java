@@ -42,6 +42,7 @@ public class ListenableFuturesExtra {
    * future does not complete the original future.
    *
    * @param future The {@link ListenableFuture} to wrap in a {@link CompletableFuture}.
+   * @param executor the executor where the listener is running.
    * @return A {@link CompletableFuture} that completes when the original future completes.
    */
   public static <V> CompletableFuture<V> toCompletableFuture(
