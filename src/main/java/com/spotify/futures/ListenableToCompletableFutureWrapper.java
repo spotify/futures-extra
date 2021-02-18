@@ -21,8 +21,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.MoreExecutors;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 class ListenableToCompletableFutureWrapper<V>
     extends CompletableFuture<V>
@@ -30,9 +30,9 @@ class ListenableToCompletableFutureWrapper<V>
 
   private final ListenableFuture<V> future;
 
-  ListenableToCompletableFutureWrapper(final ListenableFuture<V> future) {
+  ListenableToCompletableFutureWrapper(final ListenableFuture<V> future, Executor executor) {
     this.future = checkNotNull(future, "future");
-    Futures.addCallback(future, this, MoreExecutors.directExecutor());
+    Futures.addCallback(future, this, executor);
   }
 
   @Override
