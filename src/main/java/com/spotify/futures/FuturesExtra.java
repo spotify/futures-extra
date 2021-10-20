@@ -22,6 +22,7 @@ import com.google.common.util.concurrent.AsyncFunction;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
 
@@ -127,6 +128,21 @@ public class FuturesExtra {
    * @return a new future with the result of the first completing future.
    * @throws NullPointerException if the {@param futures} is null
    */
+  public static <T> ListenableFuture<T> select(final List<? extends ListenableFuture<T>> futures) {
+    return select(futures, MoreExecutors.directExecutor());
+  }
+
+  /**
+   * Returns a new {@link ListenableFuture} with the result of the first of futures that
+   * successfully completes. If all ListenableFutures in futures fails the returned feature
+   * fails as well with the Exception of the last failed future. If futures is an empty
+   * list the returned future fails immediately with {@link java.util.NoSuchElementException}
+   *
+   * @param futures a {@link List} of futures
+   * @param executor an executor to run the callback on.
+   * @return a new future with the result of the first completing future.
+   * @throws NullPointerException if the {@param futures} is null
+   */
   public static <T> ListenableFuture<T> select(
       final List<? extends ListenableFuture<T>> futures,
       final Executor executor) {
@@ -182,6 +198,23 @@ public class FuturesExtra {
   public static <T> void addCallback(
           final ListenableFuture<T> future,
           final Consumer<? super T> success,
+          final Consumer<Throwable> failure) {
+    addCallback(future, success, failure, MoreExecutors.directExecutor());
+  }
+
+  /**
+   * A lambda-friendly way to attach callbacks to a {@link ListenableFuture}. The success
+   * callback will only be run if the future completes successfully, and failure will
+   * only be run if the future fails.
+   * @param future a ListenableFuture to attach the callbacks to.
+   * @param success a consumer, to be called with the result of the successful future.
+   * @param failure a consumer, to be called with the result of the failed future.
+   * @param executor an executor to run the callback on.
+   * @throws NullPointerException if the {@param success} and {@param failure} are null
+   */
+  public static <T> void addCallback(
+          final ListenableFuture<T> future,
+          final Consumer<? super T> success,
           final Consumer<Throwable> failure,
           final Executor executor) {
     if (success == null && failure == null) {
@@ -212,6 +245,19 @@ public class FuturesExtra {
    */
   public static <T> void addSuccessCallback(
           final ListenableFuture<T> future,
+          final Consumer<? super T> consumer) {
+    addSuccessCallback(future, consumer, MoreExecutors.directExecutor());
+  }
+
+  /**
+   * A lambda-friendly way to attach a callback to a {@link ListenableFuture}. The callback will
+   * only be run if the future completes successfully.
+   * @param future a ListenableFuture to attach the callback to.
+   * @param consumer a consumer, to be called with the result of the successful future.
+   * @param executor an executor to run the callback on.
+   */
+  public static <T> void addSuccessCallback(
+          final ListenableFuture<T> future,
           final Consumer<? super T> consumer,
           final Executor executor) {
     addCallback(future, consumer, null, executor);
@@ -222,6 +268,19 @@ public class FuturesExtra {
    * only be run if the future fails.
    * @param future a ListenableFuture to attach the callback to.
    * @param consumer a consumer, to be called with the result of the failed future.
+   */
+  public static <T> void addFailureCallback(
+          final ListenableFuture<T> future,
+          final Consumer<Throwable> consumer) {
+    addFailureCallback(future, consumer, MoreExecutors.directExecutor());
+  }
+
+  /**
+   * A lambda-friendly way to attach a callback to a {@link ListenableFuture}. The callback will
+   * only be run if the future fails.
+   * @param future a ListenableFuture to attach the callback to.
+   * @param consumer a consumer, to be called with the result of the failed future.
+   * @param executor an executor to run the callback on.
    */
   public static <T> void addFailureCallback(
           final ListenableFuture<T> future,
@@ -239,6 +298,27 @@ public class FuturesExtra {
    * @param a a ListenableFuture to combine
    * @param b a ListenableFuture to combine
    * @param function the implementation of the transform
+
+   * @return a ListenableFuture holding the result of function.apply()
+   */
+  public static <Z, A, B> ListenableFuture<Z> syncTransform2(
+          ListenableFuture<A> a,
+          ListenableFuture<B> b,
+          final Function2<Z, ? super A, ? super B> function) {
+    return syncTransform2(a, b, function, MoreExecutors.directExecutor());
+  }
+
+  /**
+   * Transform the input futures into a single future, using the provided
+   * transform function. The transformation follows the same semantics as as
+   * {@link Futures#transform(ListenableFuture, Function, Executor)} and the input
+   * futures are combined using {@link Futures#allAsList}.
+   *
+   * @param a a ListenableFuture to combine
+   * @param b a ListenableFuture to combine
+   * @param function the implementation of the transform
+   * @param executor an executor to run the function on.
+
    * @return a ListenableFuture holding the result of function.apply()
    */
   public static <Z, A, B> ListenableFuture<Z> syncTransform2(
@@ -277,6 +357,27 @@ public class FuturesExtra {
    * @param a a ListenableFuture to combine
    * @param b a ListenableFuture to combine
    * @param function the implementation of the transform
+
+   * @return a ListenableFuture holding the result of function.apply()
+   */
+  public static <Z, A, B> ListenableFuture<Z> asyncTransform2(
+          ListenableFuture<A> a,
+          ListenableFuture<B> b,
+          final AsyncFunction2<Z, ? super A, ? super B> function) {
+    return asyncTransform2(a, b, function, MoreExecutors.directExecutor());
+  }
+
+  /**
+   * Transform the input futures into a single future, using the provided
+   * transform function. The transformation follows the same semantics as as
+   * {@link Futures#transformAsync(ListenableFuture, AsyncFunction, Executor)} and the input
+   * futures are combined using {@link Futures#allAsList}.
+   *
+   * @param a a ListenableFuture to combine
+   * @param b a ListenableFuture to combine
+   * @param function the implementation of the transform
+   * @param executor an executor to run the function on.
+
    * @return a ListenableFuture holding the result of function.apply()
    */
   public static <Z, A, B> ListenableFuture<Z> asyncTransform2(
@@ -317,6 +418,29 @@ public class FuturesExtra {
    * @param b a ListenableFuture to combine
    * @param c a ListenableFuture to combine
    * @param function the implementation of the transform
+
+   * @return a ListenableFuture holding the result of function.apply()
+   */
+  public static <Z, A, B, C> ListenableFuture<Z> syncTransform3(
+          ListenableFuture<A> a,
+          ListenableFuture<B> b,
+          ListenableFuture<C> c,
+          final Function3<Z, ? super A, ? super B, ? super C> function) {
+    return syncTransform3(a, b, c, function, MoreExecutors.directExecutor());
+  }
+
+  /**
+   * Transform the input futures into a single future, using the provided
+   * transform function. The transformation follows the same semantics as as
+   * {@link Futures#transform(ListenableFuture, Function, Executor)} and the input
+   * futures are combined using {@link Futures#allAsList}.
+   *
+   * @param a a ListenableFuture to combine
+   * @param b a ListenableFuture to combine
+   * @param c a ListenableFuture to combine
+   * @param function the implementation of the transform
+   * @param executor an executor to run the function on.
+
    * @return a ListenableFuture holding the result of function.apply()
    */
   public static <Z, A, B, C> ListenableFuture<Z> syncTransform3(
@@ -350,6 +474,29 @@ public class FuturesExtra {
    * @param b a ListenableFuture to combine
    * @param c a ListenableFuture to combine
    * @param function the implementation of the transform
+
+   * @return a ListenableFuture holding the result of function.apply()
+   */
+  public static <Z, A, B, C> ListenableFuture<Z> asyncTransform3(
+          ListenableFuture<A> a,
+          ListenableFuture<B> b,
+          ListenableFuture<C> c,
+          final AsyncFunction3<Z, ? super A, ? super B, ? super C> function) {
+    return asyncTransform3(a, b, c, function, MoreExecutors.directExecutor());
+  }
+
+  /**
+   * Transform the input futures into a single future, using the provided
+   * transform function. The transformation follows the same semantics as as
+   * {@link Futures#transformAsync(ListenableFuture, AsyncFunction, Executor)} and the input
+   * futures are combined using {@link Futures#allAsList}.
+   *
+   * @param a a ListenableFuture to combine
+   * @param b a ListenableFuture to combine
+   * @param c a ListenableFuture to combine
+   * @param function the implementation of the transform
+   * @param executor an executor to run the function on.
+
    * @return a ListenableFuture holding the result of function.apply()
    */
   public static <Z, A, B, C> ListenableFuture<Z> asyncTransform3(
@@ -380,6 +527,31 @@ public class FuturesExtra {
    * @param c a ListenableFuture to combine
    * @param d a ListenableFuture to combine
    * @param function the implementation of the transform
+
+   * @return a ListenableFuture holding the result of function.apply()
+   */
+  public static <Z, A, B, C, D> ListenableFuture<Z> syncTransform4(
+          ListenableFuture<A> a,
+          ListenableFuture<B> b,
+          ListenableFuture<C> c,
+          ListenableFuture<D> d,
+          final Function4<Z, ? super A, ? super B, ? super C, ? super D> function) {
+    return syncTransform4(a, b, c, d, function, MoreExecutors.directExecutor());
+  }
+
+  /**
+   * Transform the input futures into a single future, using the provided
+   * transform function. The transformation follows the same semantics as as
+   * {@link Futures#transform(ListenableFuture, Function, Executor)} and the input
+   * futures are combined using {@link Futures#allAsList}.
+   *
+   * @param a a ListenableFuture to combine
+   * @param b a ListenableFuture to combine
+   * @param c a ListenableFuture to combine
+   * @param d a ListenableFuture to combine
+   * @param function the implementation of the transform
+   * @param executor an executor to run the function on.
+
    * @return a ListenableFuture holding the result of function.apply()
    */
   public static <Z, A, B, C, D> ListenableFuture<Z> syncTransform4(
@@ -415,6 +587,31 @@ public class FuturesExtra {
    * @param c a ListenableFuture to combine
    * @param d a ListenableFuture to combine
    * @param function the implementation of the transform
+
+   * @return a ListenableFuture holding the result of function.apply()
+   */
+  public static <Z, A, B, C, D> ListenableFuture<Z> asyncTransform4(
+          ListenableFuture<A> a,
+          ListenableFuture<B> b,
+          ListenableFuture<C> c,
+          ListenableFuture<D> d,
+          final AsyncFunction4<Z, ? super A, ? super B, ? super C, ? super D> function) {
+    return asyncTransform4(a, b, c, d, function, MoreExecutors.directExecutor());
+  }
+
+  /**
+   * Transform the input futures into a single future, using the provided
+   * transform function. The transformation follows the same semantics as as
+   * {@link Futures#transformAsync(ListenableFuture, AsyncFunction, Executor)} and the input
+   * futures are combined using {@link Futures#allAsList}.
+   *
+   * @param a a ListenableFuture to combine
+   * @param b a ListenableFuture to combine
+   * @param c a ListenableFuture to combine
+   * @param d a ListenableFuture to combine
+   * @param function the implementation of the transform
+   * @param executor an executor to run the function on.
+
    * @return a ListenableFuture holding the result of function.apply()
    */
   public static <Z, A, B, C, D> ListenableFuture<Z> asyncTransform4(
@@ -455,6 +652,32 @@ public class FuturesExtra {
           ListenableFuture<C> c,
           ListenableFuture<D> d,
           ListenableFuture<E> e,
+          final Function5<Z, ? super A, ? super B, ? super C, ? super D, ? super E> function) {
+    return syncTransform5(a, b, c, d, e, function, MoreExecutors.directExecutor());
+  }
+
+  /**
+   * Transform the input futures into a single future, using the provided
+   * transform function. The transformation follows the same semantics as as
+   * {@link Futures#transform(ListenableFuture, Function, Executor)} and the input
+   * futures are combined using {@link Futures#allAsList}.
+   *
+   * @param a a ListenableFuture to combine
+   * @param b a ListenableFuture to combine
+   * @param c a ListenableFuture to combine
+   * @param d a ListenableFuture to combine
+   * @param e a ListenableFuture to combine
+   * @param function the implementation of the transform
+   * @param executor an executor to run the function on.
+
+   * @return a ListenableFuture holding the result of function.apply()
+   */
+  public static <Z, A, B, C, D, E> ListenableFuture<Z> syncTransform5(
+          ListenableFuture<A> a,
+          ListenableFuture<B> b,
+          ListenableFuture<C> c,
+          ListenableFuture<D> d,
+          ListenableFuture<E> e,
           final Function5<Z, ? super A, ? super B, ? super C, ? super D, ? super E> function,
           final Executor executor) {
     return transform(
@@ -485,6 +708,34 @@ public class FuturesExtra {
    * @param d a ListenableFuture to combine
    * @param e a ListenableFuture to combine
    * @param function the implementation of the transform
+
+   * @return a ListenableFuture holding the result of function.apply()
+   */
+  public static <Z, A, B, C, D, E> ListenableFuture<Z> asyncTransform5(
+          ListenableFuture<A> a,
+          ListenableFuture<B> b,
+          ListenableFuture<C> c,
+          ListenableFuture<D> d,
+          ListenableFuture<E> e,
+          final AsyncFunction5<Z, ? super A, ? super B, ? super C,
+                  ? super D, ? super E> function) {
+    return asyncTransform5(a, b, c, d, e, function, MoreExecutors.directExecutor());
+  }
+
+  /**
+   * Transform the input futures into a single future, using the provided
+   * transform function. The transformation follows the same semantics as as
+   * {@link Futures#transformAsync(ListenableFuture, AsyncFunction, Executor)} and the input
+   * futures are combined using {@link Futures#allAsList}.
+   *
+   * @param a a ListenableFuture to combine
+   * @param b a ListenableFuture to combine
+   * @param c a ListenableFuture to combine
+   * @param d a ListenableFuture to combine
+   * @param e a ListenableFuture to combine
+   * @param function the implementation of the transform
+   * @param executor an executor to run the function on.
+
    * @return a ListenableFuture holding the result of function.apply()
    */
   public static <Z, A, B, C, D, E> ListenableFuture<Z> asyncTransform5(
@@ -521,6 +772,34 @@ public class FuturesExtra {
    * @param e a ListenableFuture to combine
    * @param f a ListenableFuture to combine
    * @param function the implementation of the transform
+   * @return a ListenableFuture holding the result of function.apply()
+   */
+  public static <Z, A, B, C, D, E, F> ListenableFuture<Z> syncTransform6(
+      ListenableFuture<A> a,
+      ListenableFuture<B> b,
+      ListenableFuture<C> c,
+      ListenableFuture<D> d,
+      ListenableFuture<E> e,
+      ListenableFuture<F> f,
+      final Function6<Z, ? super A, ? super B, ? super C,
+              ? super D, ? super E, ? super F> function) {
+    return syncTransform6(a, b, c, d, e, f, function, MoreExecutors.directExecutor());
+  }
+
+  /**
+   * Transform the input futures into a single future, using the provided
+   * transform function. The transformation follows the same semantics as as
+   * {@link Futures#transform(ListenableFuture, Function, Executor)} and the input
+   * futures are combined using {@link Futures#allAsList}.
+   *
+   * @param a a ListenableFuture to combine
+   * @param b a ListenableFuture to combine
+   * @param c a ListenableFuture to combine
+   * @param d a ListenableFuture to combine
+   * @param e a ListenableFuture to combine
+   * @param f a ListenableFuture to combine
+   * @param function the implementation of the transform
+   * @param executor an executor to run the function on.
    * @return a ListenableFuture holding the result of function.apply()
    */
   public static <Z, A, B, C, D, E, F> ListenableFuture<Z> syncTransform6(
@@ -572,6 +851,34 @@ public class FuturesExtra {
       ListenableFuture<E> e,
       ListenableFuture<F> f,
       final AsyncFunction6<Z, ? super A, ? super B, ? super C, ? super D,
+              ? super E, ? super F> function) {
+    return asyncTransform6(a, b, c, d, e, f, function, MoreExecutors.directExecutor());
+  }
+
+  /**
+   * Transform the input futures into a single future, using the provided
+   * transform function. The transformation follows the same semantics as as
+   * {@link Futures#transformAsync(ListenableFuture, AsyncFunction, Executor)} and the input
+   * futures are combined using {@link Futures#allAsList}.
+   *
+   * @param a a ListenableFuture to combine
+   * @param b a ListenableFuture to combine
+   * @param c a ListenableFuture to combine
+   * @param d a ListenableFuture to combine
+   * @param e a ListenableFuture to combine
+   * @param f a ListenableFuture to combine
+   * @param function the implementation of the transform
+   * @param executor an executor to run the function on.
+   * @return a ListenableFuture holding the result of function.apply()
+   */
+  public static <Z, A, B, C, D, E, F> ListenableFuture<Z> asyncTransform6(
+      ListenableFuture<A> a,
+      ListenableFuture<B> b,
+      ListenableFuture<C> c,
+      ListenableFuture<D> d,
+      ListenableFuture<E> e,
+      ListenableFuture<F> f,
+      final AsyncFunction6<Z, ? super A, ? super B, ? super C, ? super D,
               ? super E, ? super F> function,
       final Executor executor) {
     return transform(
@@ -605,6 +912,17 @@ public class FuturesExtra {
    * @see #join(Executor, ListenableFuture...)
    */
   public static ListenableFuture<JoinedResults> join(
+      final List<? extends ListenableFuture<?>> inputs) {
+    return join(MoreExecutors.directExecutor(), inputs);
+  }
+
+  /**
+   * <p>Transform a list of futures to a future that returns a joined result of them all.
+   * The result can be used to get the joined results and ensures no future that were not part of
+   * the join is accessed.</p>
+   * @see #join(Executor, ListenableFuture...)
+   */
+  public static ListenableFuture<JoinedResults> join(
       final Executor executor, final List<? extends ListenableFuture<?>> inputs) {
     return Futures.transform(
         Futures.allAsList(inputs),
@@ -627,9 +945,59 @@ public class FuturesExtra {
    * </pre>
    */
   public static ListenableFuture<JoinedResults> join(
+      final ListenableFuture<?>... inputs) {
+    return join(MoreExecutors.directExecutor(), Arrays.asList(inputs));
+  }
+
+  /**
+   * <p>Transform a list of futures to a future that returns a joined result of them all.
+   * The result can be used to get the joined results and ensures no future that were not part of
+   * the join is accessed.</p>
+   * <p>Example</p>
+   * <pre>
+   * {@code
+   * final Future<String> first = Futures.immediateFuture("ok");
+   * final Future<Integer> second = Futures.immediateFuture(1);
+   * JoinedResults futures = FuturesExtra.join(first, second).get();
+   * assertEquals("ok", futures.get(first));
+   * assertEquals(1, futures.get(second));
+   * }
+   * </pre>
+   */
+  public static ListenableFuture<JoinedResults> join(
       final Executor executor,
       final ListenableFuture<?>... inputs) {
     return join(executor, Arrays.asList(inputs));
+  }
+
+  /**
+   * Wrapper function for
+   * {@link Futures#transform(ListenableFuture, Function, Executor)}.
+   *
+   *
+   * @param input the input future
+   * @param function the implementation of the transform
+
+   * @return a ListenableFuture holding the result of function.apply()
+   */
+  public static <I, O> ListenableFuture<O> syncTransform(
+          ListenableFuture<I> input, Function<? super I, ? extends O> function) {
+    return Futures.transform(input, function, MoreExecutors.directExecutor());
+  }
+
+  /**
+   * Wrapper function for
+   * {@link Futures#transformAsync(ListenableFuture, AsyncFunction, Executor)}.
+   *
+   *
+   * @param input the input future
+   * @param function the implementation of the transform
+
+   * @return a ListenableFuture holding the result of function.apply()
+   */
+  public static <I, O> ListenableFuture<O> asyncTransform(
+          ListenableFuture<I> input, AsyncFunction<? super I, ? extends O> function) {
+    return Futures.transformAsync(input, function, MoreExecutors.directExecutor());
   }
 
   /**
