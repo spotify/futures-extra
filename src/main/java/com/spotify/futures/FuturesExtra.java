@@ -104,6 +104,35 @@ public class FuturesExtra {
   public static <A, B> ListenableFuture<A> fastFail(
           final ListenableFuture<B> conditionValue,
           final ListenableFuture<A> future,
+          final Validator<B> validator) {
+    return fastFail(conditionValue, future, validator, MoreExecutors.directExecutor());
+  }
+
+  /**
+   * This takes two futures of type {@link A} and {@link B} and works like
+   * a valve on {@link A}, with validation executed on {@link B}.
+   *
+   * <p>Returns a future with the result of {@link A} that will wait for a
+   * condition on {@link B} to be validated first. Both futures can run in
+   * parallel. If the condition fails validation, the {@link A} future will
+   * be cancelled by a call to {@link ListenableFuture#cancel(boolean)} with
+   * {@code false}.
+   *
+   * <p>This is useful for when you want to optimistically run a time consuming
+   * path while validating if it should be computed or not by a parallel
+   * async computation.
+   *
+   * @param conditionValue  The future computing the value for validation.
+   * @param future          The actual value future.
+   * @param validator       A validator for the condition.
+   * @param executor        An executor to run the validation on.
+   *
+   * @return a new {@link ListenableFuture} eventually either containing
+   * {@param future} or any exception thrown by {@param validator}.
+   */
+  public static <A, B> ListenableFuture<A> fastFail(
+          final ListenableFuture<B> conditionValue,
+          final ListenableFuture<A> future,
           final Validator<B> validator,
           final Executor executor) {
     return Futures.transformAsync(conditionValue, value -> {

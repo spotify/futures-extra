@@ -20,6 +20,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 
 import java.util.concurrent.ArrayBlockingQueue;
@@ -52,6 +53,18 @@ public final class ConcurrencyLimiter<T> implements FutureJobInvoker<T> {
     Preconditions.checkArgument(maxQueueSize > 0);
     this.queue = new ArrayBlockingQueue<>(maxQueueSize);
     this.limit = new Semaphore(maxConcurrency);
+  }
+
+  /**
+   * Create a {@code ConcurrencyLimiter} instance.
+   *
+   * @param maxConcurrency maximum number of futures in progress,
+   * @param maxQueueSize maximum number of jobs in queue. This is a soft bound and may be
+   *                     temporarily exceeded if add() is called concurrently.
+   * @return a new concurrency limiter
+   */
+  public static <T> ConcurrencyLimiter<T> create(int maxConcurrency, int maxQueueSize) {
+    return new ConcurrencyLimiter<>(MoreExecutors.directExecutor(), maxConcurrency, maxQueueSize);
   }
 
   /**
