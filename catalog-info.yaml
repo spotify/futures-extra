@@ -1,0 +1,7 @@
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: futures-extra
+spec:
+  type: library
+  owner: weaver
