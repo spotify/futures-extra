@@ -72,7 +72,7 @@
     <dependency>
       <groupId>com.google.api</groupId>
       <artifactId>api-common</artifactId>
-      <version>1.8.1</version>
+      <version>1.10.6</version>
     </dependency>
 
     <!-- test dependencies -->
