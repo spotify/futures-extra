@@ -36,13 +36,6 @@
     <module name="SuppressionCommentFilter"/>
     <module name="StaticVariableName"/>
   </module>
-  <module name="Header">
-    <property name="headerFile" value="copyright-header.txt"/>
-    <!-- The year itself may differ, so ignore that part -->
-    <property name="ignoreLines" value="2"/>
-    <property name="fileExtensions" value="java"/>
-  </module>
-
   <!--
       Checkstyle configuration that checks the Google coding conventions from Google Java Style
       that can be found at https://google.github.io/styleguide/javaguide.html.
