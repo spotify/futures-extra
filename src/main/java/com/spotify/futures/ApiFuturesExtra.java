@@ -18,7 +18,6 @@ package com.spotify.futures;
 
 import com.google.api.core.ApiFuture;
 import com.google.common.util.concurrent.MoreExecutors;
-
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 

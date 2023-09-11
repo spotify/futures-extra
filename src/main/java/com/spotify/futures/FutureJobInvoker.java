@@ -17,7 +17,6 @@
 package com.spotify.futures;
 
 import com.google.common.util.concurrent.ListenableFuture;
-
 import java.util.concurrent.Callable;
 
 public interface FutureJobInvoker<T> {
