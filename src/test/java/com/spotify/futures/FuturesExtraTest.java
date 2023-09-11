@@ -19,34 +19,29 @@
  */
 package com.spotify.futures;
 
-import com.google.common.collect.Lists;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.MoreExecutors;
-import com.google.common.util.concurrent.SettableFuture;
-import com.google.common.util.concurrent.UncheckedExecutionException;
-
-import com.spotify.futures.FuturesExtra;
-import com.spotify.futures.FuturesExtra.Consumer;
-import com.spotify.futures.Validator;
-
-import org.junit.Test;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.concurrent.ExecutionException;
-
 import static com.google.common.util.concurrent.Uninterruptibles.getUninterruptibly;
 import static com.spotify.futures.FuturesExtra.fastFail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+
+import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.SettableFuture;
+import com.google.common.util.concurrent.UncheckedExecutionException;
+import com.spotify.futures.FuturesExtra.Consumer;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.concurrent.ExecutionException;
+import org.junit.Test;
 
 public class FuturesExtraTest {
   @Test
@@ -54,7 +49,8 @@ public class FuturesExtraTest {
     ListenableFuture<String> a = Futures.immediateFuture("a");
     ListenableFuture<String> b = Futures.immediateFuture("b");
     ListenableFuture<String> c = Futures.immediateFuture("c");
-    ListenableFuture<String> result = FuturesExtra.syncTransform3(a, b, c, (s, s2, s3) -> s + s2 + s3);
+    ListenableFuture<String> result =
+        FuturesExtra.syncTransform3(a, b, c, (s, s2, s3) -> s + s2 + s3);
     assertEquals("abc", result.get());
   }
 
@@ -63,11 +59,12 @@ public class FuturesExtraTest {
     ListenableFuture<String> a = Futures.immediateFuture("a");
     ListenableFuture<String> b = Futures.immediateFuture("b");
     ListenableFuture<String> c = Futures.immediateFuture("c");
-    ListenableFuture<String> result = FuturesExtra.syncTransform3(a, b, c, (s, s2, s3) -> s + s2 + s3);
+    ListenableFuture<String> result =
+        FuturesExtra.syncTransform3(a, b, c, (s, s2, s3) -> s + s2 + s3);
 
     ListenableFuture<String> d = Futures.immediateFuture("d");
-    ListenableFuture<String> result2 = FuturesExtra.syncTransform3(a, result, d,
-        (s, s2, s3) -> s + "|" + s2 + "|" + s3);
+    ListenableFuture<String> result2 =
+        FuturesExtra.syncTransform3(a, result, d, (s, s2, s3) -> s + "|" + s2 + "|" + s3);
     assertEquals("a|abc|d", result2.get());
   }
 
@@ -75,8 +72,10 @@ public class FuturesExtraTest {
   public void testException() throws Exception {
     ListenableFuture<String> a = Futures.immediateFuture("a");
     ListenableFuture<String> b = Futures.immediateFuture("b");
-    ListenableFuture<String> c = Futures.immediateFailedFuture(new IllegalArgumentException("my error message"));
-    ListenableFuture<String> result = FuturesExtra.syncTransform3(a, b, c, (s, s2, s3) -> s + s2 + s3);
+    ListenableFuture<String> c =
+        Futures.immediateFailedFuture(new IllegalArgumentException("my error message"));
+    ListenableFuture<String> result =
+        FuturesExtra.syncTransform3(a, b, c, (s, s2, s3) -> s + s2 + s3);
 
     try {
       result.get();
@@ -89,9 +88,12 @@ public class FuturesExtraTest {
   @Test
   public void testMultipleExceptions() throws Exception {
     ListenableFuture<String> a = Futures.immediateFuture("a");
-    ListenableFuture<String> b = Futures.immediateFailedFuture(new IllegalArgumentException("first error"));
-    ListenableFuture<String> c = Futures.immediateFailedFuture(new IllegalArgumentException("second error"));
-    ListenableFuture<String> result = FuturesExtra.syncTransform3(a, b, c, (s, s2, s3) -> s + s2 + s3);
+    ListenableFuture<String> b =
+        Futures.immediateFailedFuture(new IllegalArgumentException("first error"));
+    ListenableFuture<String> c =
+        Futures.immediateFailedFuture(new IllegalArgumentException("second error"));
+    ListenableFuture<String> result =
+        FuturesExtra.syncTransform3(a, b, c, (s, s2, s3) -> s + s2 + s3);
 
     try {
       result.get();
@@ -106,7 +108,8 @@ public class FuturesExtraTest {
     SettableFuture<String> a = SettableFuture.create();
     ListenableFuture<String> b = Futures.immediateFuture("b");
     ListenableFuture<String> c = Futures.immediateFuture("c");
-    ListenableFuture<String> result = FuturesExtra.syncTransform3(a, b, c, (s, s2, s3) -> s + s2 + s3);
+    ListenableFuture<String> result =
+        FuturesExtra.syncTransform3(a, b, c, (s, s2, s3) -> s + s2 + s3);
     assertEquals(false, result.isDone());
     a.set("a");
     assertEquals("abc", result.get());
@@ -117,10 +120,12 @@ public class FuturesExtraTest {
     SettableFuture<String> a = SettableFuture.create();
     ListenableFuture<String> b = Futures.immediateFuture("b");
     ListenableFuture<String> c = Futures.immediateFuture("c");
-    ListenableFuture<String> result = FuturesExtra.syncTransform3(a, b, c, (s, s2, s3) -> s + s2 + s3);
+    ListenableFuture<String> result =
+        FuturesExtra.syncTransform3(a, b, c, (s, s2, s3) -> s + s2 + s3);
 
     ListenableFuture<String> d = Futures.immediateFuture("d");
-    ListenableFuture<String> result2 = FuturesExtra.syncTransform3(a, result, d, (s, s2, s3) -> s + "|" + s2 + "|" + s3);
+    ListenableFuture<String> result2 =
+        FuturesExtra.syncTransform3(a, result, d, (s, s2, s3) -> s + "|" + s2 + "|" + s3);
     assertEquals(false, result.isDone());
     assertEquals(false, result2.isDone());
     a.set("a");
@@ -132,7 +137,8 @@ public class FuturesExtraTest {
     ListenableFuture<String> a = Futures.immediateFuture("a");
     ListenableFuture<String> b = Futures.immediateFuture("b");
     ListenableFuture<String> c = Futures.immediateFuture("c");
-    ListenableFuture<String> result = FuturesExtra.asyncTransform3(a, b, c, (s, s2, s3) -> Futures.immediateFuture(s + s2 + s3));
+    ListenableFuture<String> result =
+        FuturesExtra.asyncTransform3(a, b, c, (s, s2, s3) -> Futures.immediateFuture(s + s2 + s3));
     assertEquals("abc", result.get());
   }
 
@@ -140,17 +146,23 @@ public class FuturesExtraTest {
   public void testGenericBounds() throws Exception {
     ListenableFuture<Integer> a = Futures.immediateFuture(17);
     ListenableFuture<Integer> b = Futures.immediateFuture(42);
-    ListenableFuture<Integer> result = FuturesExtra.syncTransform2(a, b,
-        (FuturesExtra.Function2<Integer, Number, Number>) (s, s2) -> s.intValue() + s2.intValue());
+    ListenableFuture<Integer> result =
+        FuturesExtra.syncTransform2(
+            a,
+            b,
+            (FuturesExtra.Function2<Integer, Number, Number>)
+                (s, s2) -> s.intValue() + s2.intValue());
     assertEquals(42 + 17, result.get().intValue());
   }
+
   public void testSuccessfulSelect() throws Exception {
     final SettableFuture<String> f1 = SettableFuture.create();
     final SettableFuture<String> f2 = SettableFuture.create();
     final SettableFuture<String> f3 = SettableFuture.create();
     f1.set("value");
 
-    final ListenableFuture<String> zealous = FuturesExtra.select(Lists.<ListenableFuture<String>>newArrayList(f1, f2, f3));
+    final ListenableFuture<String> zealous =
+        FuturesExtra.select(Lists.<ListenableFuture<String>>newArrayList(f1, f2, f3));
     assertTrue(zealous.get().equals("value"));
   }
 
@@ -163,7 +175,8 @@ public class FuturesExtraTest {
     f2.setException(new Exception());
     f3.setException(new Exception());
 
-    final ListenableFuture<String> zealous = FuturesExtra.select(Arrays.<ListenableFuture<String>>asList(f1, f2, f3));
+    final ListenableFuture<String> zealous =
+        FuturesExtra.select(Arrays.<ListenableFuture<String>>asList(f1, f2, f3));
     zealous.get(); // will throw Exception
   }
 
@@ -175,13 +188,15 @@ public class FuturesExtraTest {
     f1.setException(new Exception());
     f2.set("value");
     f3.setException(new Exception());
-    final ListenableFuture<String> zealous = FuturesExtra.select(Arrays.<ListenableFuture<String>>asList(f1, f2, f3));
+    final ListenableFuture<String> zealous =
+        FuturesExtra.select(Arrays.<ListenableFuture<String>>asList(f1, f2, f3));
     assertTrue(zealous.get().equals("value"));
   }
 
   @Test(expected = ExecutionException.class)
   public void testSelectWithEmptyList() throws ExecutionException, InterruptedException {
-    final ListenableFuture<String> f = FuturesExtra.select(Collections.<ListenableFuture<String>>emptyList());
+    final ListenableFuture<String> f =
+        FuturesExtra.select(Collections.<ListenableFuture<String>>emptyList());
     f.get(); // will throw Exception
   }
 
@@ -196,7 +211,8 @@ public class FuturesExtraTest {
     SettableFuture<Integer> condition = SettableFuture.create();
     SettableFuture<String> value = SettableFuture.create(); // will not be set
 
-    ListenableFuture<String> result = fastFail(condition, value, new Min7(), MoreExecutors.directExecutor());
+    ListenableFuture<String> result =
+        fastFail(condition, value, new Min7(), MoreExecutors.directExecutor());
 
     condition.set(3);
     try {
@@ -212,7 +228,8 @@ public class FuturesExtraTest {
     SettableFuture<Integer> condition = SettableFuture.create();
     SettableFuture<String> value = SettableFuture.create();
 
-    ListenableFuture<String> result = fastFail(condition, value, new Min7(), MoreExecutors.directExecutor());
+    ListenableFuture<String> result =
+        fastFail(condition, value, new Min7(), MoreExecutors.directExecutor());
 
     condition.set(7);
     assertFalse(result.isDone());
@@ -335,31 +352,31 @@ public class FuturesExtraTest {
   @Test
   public void testSyncTransform() throws Exception {
     ListenableFuture<String> future = Futures.immediateFuture("a");
-    assertEquals("aa", FuturesExtra.syncTransform(
-        future, s -> s + s).get());
+    assertEquals("aa", FuturesExtra.syncTransform(future, s -> s + s).get());
   }
 
   @Test
   public void testAsyncTransform() throws Exception {
     ListenableFuture<String> future = Futures.immediateFuture("a");
-    assertEquals("aa", FuturesExtra.asyncTransform(
-        future, s -> Futures.immediateFuture(s + s)).get());
+    assertEquals(
+        "aa", FuturesExtra.asyncTransform(future, s -> Futures.immediateFuture(s + s)).get());
   }
 
   @Test
   public void testSyncTransform2() throws Exception {
     ListenableFuture<String> futureA = Futures.immediateFuture("a");
     ListenableFuture<String> futureB = Futures.immediateFuture("b");
-    assertEquals("ab", FuturesExtra.syncTransform2(futureA, futureB,
-        (a, b) -> a + b).get());
+    assertEquals("ab", FuturesExtra.syncTransform2(futureA, futureB, (a, b) -> a + b).get());
   }
 
   @Test
   public void testAsyncTransform2() throws Exception {
     ListenableFuture<String> futureA = Futures.immediateFuture("a");
     ListenableFuture<String> futureB = Futures.immediateFuture("b");
-    assertEquals("ab", FuturesExtra.asyncTransform2(futureA, futureB,
-        (a, b) -> Futures.immediateFuture(a + b)).get());
+    assertEquals(
+        "ab",
+        FuturesExtra.asyncTransform2(futureA, futureB, (a, b) -> Futures.immediateFuture(a + b))
+            .get());
   }
 
   @Test
@@ -367,8 +384,9 @@ public class FuturesExtraTest {
     ListenableFuture<String> futureA = Futures.immediateFuture("a");
     ListenableFuture<String> futureB = Futures.immediateFuture("b");
     ListenableFuture<String> futureC = Futures.immediateFuture("c");
-    assertEquals("abc", FuturesExtra.syncTransform3(futureA, futureB, futureC,
-        (a, b, c) -> a + b + c).get());
+    assertEquals(
+        "abc",
+        FuturesExtra.syncTransform3(futureA, futureB, futureC, (a, b, c) -> a + b + c).get());
   }
 
   @Test
@@ -376,8 +394,11 @@ public class FuturesExtraTest {
     ListenableFuture<String> futureA = Futures.immediateFuture("a");
     ListenableFuture<String> futureB = Futures.immediateFuture("b");
     ListenableFuture<String> futureC = Futures.immediateFuture("c");
-    assertEquals("abc", FuturesExtra.asyncTransform3(futureA, futureB, futureC,
-        (a, b, c) -> Futures.immediateFuture(a + b + c)).get());
+    assertEquals(
+        "abc",
+        FuturesExtra.asyncTransform3(
+                futureA, futureB, futureC, (a, b, c) -> Futures.immediateFuture(a + b + c))
+            .get());
   }
 
   @Test
@@ -386,8 +407,11 @@ public class FuturesExtraTest {
     ListenableFuture<String> futureB = Futures.immediateFuture("b");
     ListenableFuture<String> futureC = Futures.immediateFuture("c");
     ListenableFuture<String> futureD = Futures.immediateFuture("d");
-    assertEquals("abcd", FuturesExtra.syncTransform4(futureA, futureB, futureC, futureD,
-        (a, b, c, d) -> a + b + c + d).get());
+    assertEquals(
+        "abcd",
+        FuturesExtra.syncTransform4(
+                futureA, futureB, futureC, futureD, (a, b, c, d) -> a + b + c + d)
+            .get());
   }
 
   @Test
@@ -396,8 +420,15 @@ public class FuturesExtraTest {
     ListenableFuture<String> futureB = Futures.immediateFuture("b");
     ListenableFuture<String> futureC = Futures.immediateFuture("c");
     ListenableFuture<String> futureD = Futures.immediateFuture("d");
-    assertEquals("abcd", FuturesExtra.asyncTransform4(futureA, futureB, futureC, futureD,
-        (a, b, c, d) -> Futures.immediateFuture(a + b + c + d)).get());
+    assertEquals(
+        "abcd",
+        FuturesExtra.asyncTransform4(
+                futureA,
+                futureB,
+                futureC,
+                futureD,
+                (a, b, c, d) -> Futures.immediateFuture(a + b + c + d))
+            .get());
   }
 
   @Test
@@ -407,8 +438,11 @@ public class FuturesExtraTest {
     ListenableFuture<String> futureC = Futures.immediateFuture("c");
     ListenableFuture<String> futureD = Futures.immediateFuture("d");
     ListenableFuture<String> futureE = Futures.immediateFuture("e");
-    assertEquals("abcde", FuturesExtra.syncTransform5(futureA, futureB, futureC, futureD, futureE,
-        (a, b, c, d, e) -> a + b + c + d + e).get());
+    assertEquals(
+        "abcde",
+        FuturesExtra.syncTransform5(
+                futureA, futureB, futureC, futureD, futureE, (a, b, c, d, e) -> a + b + c + d + e)
+            .get());
   }
 
   @Test
@@ -418,8 +452,16 @@ public class FuturesExtraTest {
     ListenableFuture<String> futureC = Futures.immediateFuture("c");
     ListenableFuture<String> futureD = Futures.immediateFuture("d");
     ListenableFuture<String> futureE = Futures.immediateFuture("e");
-    assertEquals("abcde", FuturesExtra.asyncTransform5(futureA, futureB, futureC, futureD, futureE,
-        (a, b, c, d, e) -> Futures.immediateFuture(a + b + c + d + e)).get());
+    assertEquals(
+        "abcde",
+        FuturesExtra.asyncTransform5(
+                futureA,
+                futureB,
+                futureC,
+                futureD,
+                futureE,
+                (a, b, c, d, e) -> Futures.immediateFuture(a + b + c + d + e))
+            .get());
   }
 
   @Test
@@ -430,9 +472,17 @@ public class FuturesExtraTest {
     ListenableFuture<String> futureD = Futures.immediateFuture("d");
     ListenableFuture<String> futureE = Futures.immediateFuture("e");
     ListenableFuture<String> futureF = Futures.immediateFuture("f");
-    assertEquals("abcdef", FuturesExtra.syncTransform6(
-            futureA, futureB, futureC, futureD, futureE, futureF,
-        (a, b, c, d, e, f) -> a + b + c + d + e + f).get());
+    assertEquals(
+        "abcdef",
+        FuturesExtra.syncTransform6(
+                futureA,
+                futureB,
+                futureC,
+                futureD,
+                futureE,
+                futureF,
+                (a, b, c, d, e, f) -> a + b + c + d + e + f)
+            .get());
   }
 
   @Test
@@ -443,60 +493,86 @@ public class FuturesExtraTest {
     ListenableFuture<String> futureD = Futures.immediateFuture("d");
     ListenableFuture<String> futureE = Futures.immediateFuture("e");
     ListenableFuture<String> futureF = Futures.immediateFuture("f");
-    assertEquals("abcdef", FuturesExtra.asyncTransform6(
-            futureA, futureB, futureC, futureD, futureE, futureF,
-        (a, b, c, d, e, f) -> Futures.immediateFuture(a + b + c + d + e + f)).get());
+    assertEquals(
+        "abcdef",
+        FuturesExtra.asyncTransform6(
+                futureA,
+                futureB,
+                futureC,
+                futureD,
+                futureE,
+                futureF,
+                (a, b, c, d, e, f) -> Futures.immediateFuture(a + b + c + d + e + f))
+            .get());
   }
 
   @Test(expected = ExecutionException.class)
   public void testAsyncException2() throws Exception {
-    ListenableFuture<String> future = FuturesExtra.asyncTransform2(Futures.immediateFuture("A"), Futures.immediateFuture("B"),
-        (a, b) -> {
-          throw new Exception("foo");
-        });
+    ListenableFuture<String> future =
+        FuturesExtra.asyncTransform2(
+            Futures.immediateFuture("A"),
+            Futures.immediateFuture("B"),
+            (a, b) -> {
+              throw new Exception("foo");
+            });
     future.get();
   }
 
   @Test(expected = ExecutionException.class)
   public void testAsyncException3() throws Exception {
-    ListenableFuture<String> future = FuturesExtra.asyncTransform3(
-            Futures.immediateFuture("A"), Futures.immediateFuture("B"), Futures.immediateFuture("C"),
-        (a, b, c) -> {
-          throw new Exception("foo");
-        });
+    ListenableFuture<String> future =
+        FuturesExtra.asyncTransform3(
+            Futures.immediateFuture("A"),
+            Futures.immediateFuture("B"),
+            Futures.immediateFuture("C"),
+            (a, b, c) -> {
+              throw new Exception("foo");
+            });
     future.get();
   }
+
   @Test(expected = ExecutionException.class)
   public void testAsyncException4() throws Exception {
-    ListenableFuture<String> future = FuturesExtra.asyncTransform4(
-            Futures.immediateFuture("A"), Futures.immediateFuture("B"),
-            Futures.immediateFuture("C"), Futures.immediateFuture("D"),
-        (a, b, c, d) -> {
-          throw new Exception("foo");
-        });
+    ListenableFuture<String> future =
+        FuturesExtra.asyncTransform4(
+            Futures.immediateFuture("A"),
+            Futures.immediateFuture("B"),
+            Futures.immediateFuture("C"),
+            Futures.immediateFuture("D"),
+            (a, b, c, d) -> {
+              throw new Exception("foo");
+            });
     future.get();
   }
+
   @Test(expected = ExecutionException.class)
   public void testAsyncException5() throws Exception {
-    ListenableFuture<String> future = FuturesExtra.asyncTransform5(
-            Futures.immediateFuture("A"), Futures.immediateFuture("B"),
-            Futures.immediateFuture("C"), Futures.immediateFuture("D"),
+    ListenableFuture<String> future =
+        FuturesExtra.asyncTransform5(
+            Futures.immediateFuture("A"),
+            Futures.immediateFuture("B"),
+            Futures.immediateFuture("C"),
+            Futures.immediateFuture("D"),
             Futures.immediateFuture("E"),
-        (a, b, c, d, e) -> {
-          throw new Exception("foo");
-        });
+            (a, b, c, d, e) -> {
+              throw new Exception("foo");
+            });
     future.get();
   }
 
   @Test(expected = ExecutionException.class)
   public void testAsyncException6() throws Exception {
-    ListenableFuture<String> future = FuturesExtra.asyncTransform6(
-            Futures.immediateFuture("A"), Futures.immediateFuture("B"),
-            Futures.immediateFuture("C"), Futures.immediateFuture("D"),
-            Futures.immediateFuture("E"), Futures.immediateFuture("F"),
-        (a, b, c, d, e, f) -> {
-          throw new Exception("foo");
-        });
+    ListenableFuture<String> future =
+        FuturesExtra.asyncTransform6(
+            Futures.immediateFuture("A"),
+            Futures.immediateFuture("B"),
+            Futures.immediateFuture("C"),
+            Futures.immediateFuture("D"),
+            Futures.immediateFuture("E"),
+            Futures.immediateFuture("F"),
+            (a, b, c, d, e, f) -> {
+              throw new Exception("foo");
+            });
     future.get();
   }
 

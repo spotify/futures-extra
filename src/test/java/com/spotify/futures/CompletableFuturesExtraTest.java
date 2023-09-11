@@ -53,13 +53,12 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CompletableFuturesExtraTest {
 
-  @Rule
-  public ExpectedException exception = ExpectedException.none();
+  @Rule public ExpectedException exception = ExpectedException.none();
 
   @Mock FutureCallback<String> callback;
   @Mock ApiFutureCallback<String> apiFutureCallback;
@@ -74,7 +73,8 @@ public class CompletableFuturesExtraTest {
 
   @Test
   public void testToCompletableFutureUnwrap() {
-    final CompletableFuture<String> wrapped = ListenableFuturesExtra.toCompletableFuture(listenable);
+    final CompletableFuture<String> wrapped =
+        ListenableFuturesExtra.toCompletableFuture(listenable);
     final ListenableFuture<String> unwrapped = toListenableFuture(wrapped);
     assertThat(unwrapped, is(sameInstance(listenable)));
   }
@@ -88,8 +88,10 @@ public class CompletableFuturesExtraTest {
 
   @Test
   public void testToCompletableFutureSuccess() throws ExecutionException, InterruptedException {
-    @SuppressWarnings("unchecked") final BiConsumer<String, Throwable> consumer = mock(BiConsumer.class);
-    final CompletableFuture<String> wrapped = ListenableFuturesExtra.toCompletableFuture(listenable);
+    @SuppressWarnings("unchecked")
+    final BiConsumer<String, Throwable> consumer = mock(BiConsumer.class);
+    final CompletableFuture<String> wrapped =
+        ListenableFuturesExtra.toCompletableFuture(listenable);
     wrapped.whenComplete(consumer);
     assertThat(wrapped.isDone(), is(false));
     settable.set("done");
@@ -100,8 +102,10 @@ public class CompletableFuturesExtraTest {
 
   @Test
   public void testToCompletableFutureFailure() {
-    @SuppressWarnings("unchecked") final BiConsumer<String, Throwable> consumer = mock(BiConsumer.class);
-    final CompletableFuture<String> wrapped = ListenableFuturesExtra.toCompletableFuture(listenable);
+    @SuppressWarnings("unchecked")
+    final BiConsumer<String, Throwable> consumer = mock(BiConsumer.class);
+    final CompletableFuture<String> wrapped =
+        ListenableFuturesExtra.toCompletableFuture(listenable);
     wrapped.whenComplete(consumer);
     assertThat(wrapped.isDone(), is(false));
     final Exception failure = new Exception("failure");
@@ -235,7 +239,8 @@ public class CompletableFuturesExtraTest {
 
   @Test
   public void testImmediateFailed() throws Exception {
-    final CompletionStage<Object> future = CompletableFuturesExtra.exceptionallyCompletedFuture(new IllegalArgumentException());
+    final CompletionStage<Object> future =
+        CompletableFuturesExtra.exceptionallyCompletedFuture(new IllegalArgumentException());
     try {
       CompletableFuturesExtra.getCompleted(future.toCompletableFuture());
       fail();
@@ -259,7 +264,8 @@ public class CompletableFuturesExtraTest {
 
   @Test(expected = CompletionException.class)
   public void testGetCompletedFailsHasException() throws Exception {
-    final CompletionStage<String> future = CompletableFuturesExtra.exceptionallyCompletedFuture(new RuntimeException());
+    final CompletionStage<String> future =
+        CompletableFuturesExtra.exceptionallyCompletedFuture(new RuntimeException());
     CompletableFuturesExtra.getCompleted(future.toCompletableFuture());
     fail();
   }
@@ -289,8 +295,10 @@ public class CompletableFuturesExtraTest {
 
   @Test
   public void testDereferenceFailure() throws Exception {
-    final CompletionStage<Object> future = CompletableFuturesExtra.exceptionallyCompletedFuture(new IllegalArgumentException());
-    final CompletionStage<CompletionStage<Object>> future2 = CompletableFuture.completedFuture(future);
+    final CompletionStage<Object> future =
+        CompletableFuturesExtra.exceptionallyCompletedFuture(new IllegalArgumentException());
+    final CompletionStage<CompletionStage<Object>> future2 =
+        CompletableFuture.completedFuture(future);
     final CompletionStage<Object> dereferenced = CompletableFuturesExtra.dereference(future2);
     try {
       CompletableFuturesExtra.getCompleted(dereferenced.toCompletableFuture());
@@ -302,7 +310,8 @@ public class CompletableFuturesExtraTest {
 
   @Test
   public void testDereferenceNull() throws Exception {
-    final CompletionStage<CompletableFuture<Object>> future2 = CompletableFuture.completedFuture(null);
+    final CompletionStage<CompletableFuture<Object>> future2 =
+        CompletableFuture.completedFuture(null);
     final CompletionStage<Object> dereferenced = CompletableFuturesExtra.dereference(future2);
     try {
       CompletableFuturesExtra.getCompleted(dereferenced.toCompletableFuture());
@@ -315,28 +324,34 @@ public class CompletableFuturesExtraTest {
   @Test
   public void testDereferenceSuccess() throws Exception {
     final CompletionStage<String> future = CompletableFuture.completedFuture("hello");
-    final CompletionStage<CompletionStage<String>> future2 = CompletableFuture.completedFuture(future);
+    final CompletionStage<CompletionStage<String>> future2 =
+        CompletableFuture.completedFuture(future);
     final CompletionStage<String> dereferenced = CompletableFuturesExtra.dereference(future2);
     assertEquals("hello", CompletableFuturesExtra.getCompleted(dereferenced));
   }
 
   @Test
   public void testExceptionallyCompose() throws Exception {
-    final CompletionStage<String> future = CompletableFuturesExtra.exceptionallyCompletedFuture(new IllegalArgumentException());
+    final CompletionStage<String> future =
+        CompletableFuturesExtra.exceptionallyCompletedFuture(new IllegalArgumentException());
 
-    final CompletionStage<String> composed = CompletableFuturesExtra.exceptionallyCompose(future,
-        throwable -> CompletableFuture.completedFuture("hello"));
+    final CompletionStage<String> composed =
+        CompletableFuturesExtra.exceptionallyCompose(
+            future, throwable -> CompletableFuture.completedFuture("hello"));
 
     assertEquals("hello", CompletableFuturesExtra.getCompleted(composed));
-
   }
 
   @Test
   public void testExceptionallyComposeFailure() throws Exception {
-    final CompletionStage<String> future = CompletableFuturesExtra.exceptionallyCompletedFuture(new IllegalArgumentException());
+    final CompletionStage<String> future =
+        CompletableFuturesExtra.exceptionallyCompletedFuture(new IllegalArgumentException());
 
-    final CompletionStage<String> composed = CompletableFuturesExtra.exceptionallyCompose(future,
-        throwable -> CompletableFuturesExtra.exceptionallyCompletedFuture(new IllegalStateException()));
+    final CompletionStage<String> composed =
+        CompletableFuturesExtra.exceptionallyCompose(
+            future,
+            throwable ->
+                CompletableFuturesExtra.exceptionallyCompletedFuture(new IllegalStateException()));
 
     try {
       CompletableFuturesExtra.getCompleted(composed);
@@ -350,18 +365,25 @@ public class CompletableFuturesExtraTest {
   public void testExceptionallyComposeUnused() throws Exception {
     final CompletionStage<String> future = CompletableFuture.completedFuture("hello");
 
-    final CompletionStage<String> composed = CompletableFuturesExtra.exceptionallyCompose(future,
-        throwable -> CompletableFuturesExtra.exceptionallyCompletedFuture(new IllegalStateException()));
+    final CompletionStage<String> composed =
+        CompletableFuturesExtra.exceptionallyCompose(
+            future,
+            throwable ->
+                CompletableFuturesExtra.exceptionallyCompletedFuture(new IllegalStateException()));
     assertEquals("hello", CompletableFuturesExtra.getCompleted(composed));
   }
 
   @Test
   public void testExceptionallyComposeThrows() throws Exception {
-    final CompletionStage<String> future = CompletableFuturesExtra.exceptionallyCompletedFuture(new IllegalArgumentException());
+    final CompletionStage<String> future =
+        CompletableFuturesExtra.exceptionallyCompletedFuture(new IllegalArgumentException());
 
-    final CompletionStage<String> composed = CompletableFuturesExtra.exceptionallyCompose(future, throwable -> {
-      throw new IllegalStateException();
-    });
+    final CompletionStage<String> composed =
+        CompletableFuturesExtra.exceptionallyCompose(
+            future,
+            throwable -> {
+              throw new IllegalStateException();
+            });
     try {
       CompletableFuturesExtra.getCompleted(composed);
       fail();
@@ -372,9 +394,11 @@ public class CompletableFuturesExtraTest {
 
   @Test
   public void testExceptionallyComposeReturnsNull() throws Exception {
-    final CompletionStage<String> future = CompletableFuturesExtra.exceptionallyCompletedFuture(new IllegalArgumentException());
+    final CompletionStage<String> future =
+        CompletableFuturesExtra.exceptionallyCompletedFuture(new IllegalArgumentException());
 
-    final CompletionStage<String> composed = CompletableFuturesExtra.exceptionallyCompose(future, throwable -> null);
+    final CompletionStage<String> composed =
+        CompletableFuturesExtra.exceptionallyCompose(future, throwable -> null);
     try {
       CompletableFuturesExtra.getCompleted(composed);
       fail();
@@ -385,21 +409,26 @@ public class CompletableFuturesExtraTest {
 
   @Test
   public void testHandleCompose() throws Exception {
-    final CompletionStage<String> future = CompletableFuturesExtra.exceptionallyCompletedFuture(new IllegalArgumentException());
+    final CompletionStage<String> future =
+        CompletableFuturesExtra.exceptionallyCompletedFuture(new IllegalArgumentException());
 
-    final CompletionStage<String> composed = CompletableFuturesExtra.handleCompose(future,
-        (s, throwable) -> CompletableFuture.completedFuture("hello"));
+    final CompletionStage<String> composed =
+        CompletableFuturesExtra.handleCompose(
+            future, (s, throwable) -> CompletableFuture.completedFuture("hello"));
 
     assertEquals("hello", CompletableFuturesExtra.getCompleted(composed));
-
   }
 
   @Test
   public void testHandleComposeFailure() throws Exception {
-    final CompletionStage<String> future = CompletableFuturesExtra.exceptionallyCompletedFuture(new IllegalArgumentException());
+    final CompletionStage<String> future =
+        CompletableFuturesExtra.exceptionallyCompletedFuture(new IllegalArgumentException());
 
-    final CompletionStage<String> composed = CompletableFuturesExtra.handleCompose(future,
-        (s, throwable) -> CompletableFuturesExtra.exceptionallyCompletedFuture(new IllegalStateException()));
+    final CompletionStage<String> composed =
+        CompletableFuturesExtra.handleCompose(
+            future,
+            (s, throwable) ->
+                CompletableFuturesExtra.exceptionallyCompletedFuture(new IllegalStateException()));
     try {
       CompletableFuturesExtra.getCompleted(composed);
       fail();
@@ -410,11 +439,15 @@ public class CompletableFuturesExtraTest {
 
   @Test
   public void testHandleComposeThrows() throws Exception {
-    final CompletionStage<String> future = CompletableFuturesExtra.exceptionallyCompletedFuture(new IllegalArgumentException());
+    final CompletionStage<String> future =
+        CompletableFuturesExtra.exceptionallyCompletedFuture(new IllegalArgumentException());
 
-    final CompletionStage<String> composed = CompletableFuturesExtra.handleCompose(future, (s, throwable) -> {
-      throw new IllegalStateException();
-    });
+    final CompletionStage<String> composed =
+        CompletableFuturesExtra.handleCompose(
+            future,
+            (s, throwable) -> {
+              throw new IllegalStateException();
+            });
     try {
       CompletableFuturesExtra.getCompleted(composed);
       fail();
@@ -425,9 +458,11 @@ public class CompletableFuturesExtraTest {
 
   @Test
   public void testHandleComposeReturnsNull() throws Exception {
-    final CompletionStage<String> future = CompletableFuturesExtra.exceptionallyCompletedFuture(new IllegalArgumentException());
+    final CompletionStage<String> future =
+        CompletableFuturesExtra.exceptionallyCompletedFuture(new IllegalArgumentException());
 
-    final CompletionStage<String> composed = CompletableFuturesExtra.handleCompose(future, (s, throwable) -> null);
+    final CompletionStage<String> composed =
+        CompletableFuturesExtra.handleCompose(future, (s, throwable) -> null);
     try {
       CompletableFuturesExtra.getCompleted(composed);
       fail();
