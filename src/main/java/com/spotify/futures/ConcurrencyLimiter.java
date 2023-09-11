@@ -1,17 +1,21 @@
-/*
- * Copyright (c) 2013-2018 Spotify AB
+/*-
+ * -\-\-
+ * futures-extra
+ * --
+ * Copyright (C) 2016 - 2023 Spotify AB
+ * --
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * -/-/-
  */
 
 package com.spotify.futures;
@@ -22,7 +26,6 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
-
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
@@ -30,9 +33,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Semaphore;
 
 /**
- * A ConcurrencyLimiter can be used for efficiently queueing up
- * asynchronous work to only run up to a specific limit of work
- * concurrently.
+ * A ConcurrencyLimiter can be used for efficiently queueing up asynchronous work to only run up to
+ * a specific limit of work concurrently.
  *
  * <p>This is a threadsafe class.
  */
@@ -60,7 +62,7 @@ public final class ConcurrencyLimiter<T> implements FutureJobInvoker<T> {
    *
    * @param maxConcurrency maximum number of futures in progress,
    * @param maxQueueSize maximum number of jobs in queue. This is a soft bound and may be
-   *                     temporarily exceeded if add() is called concurrently.
+   *     temporarily exceeded if add() is called concurrently.
    * @return a new concurrency limiter
    */
   public static <T> ConcurrencyLimiter<T> create(int maxConcurrency, int maxQueueSize) {
@@ -73,7 +75,7 @@ public final class ConcurrencyLimiter<T> implements FutureJobInvoker<T> {
    * @param executor the executor to run callables on.
    * @param maxConcurrency maximum number of futures in progress,
    * @param maxQueueSize maximum number of jobs in queue. This is a soft bound and may be
-   *                     temporarily exceeded if add() is called concurrently.
+   *     temporarily exceeded if add() is called concurrently.
    * @return a new concurrency limiter
    */
   public static <T> ConcurrencyLimiter<T> create(
@@ -82,14 +84,13 @@ public final class ConcurrencyLimiter<T> implements FutureJobInvoker<T> {
   }
 
   /**
-   * the callable function will run as soon as the currently active set of
-   * futures is less than the maxConcurrency limit.
+   * the callable function will run as soon as the currently active set of futures is less than the
+   * maxConcurrency limit.
    *
    * @param callable - a function that creates a future.
-   * @return a proxy future that completes with the future created by the
-   *          input function.
-   *          This future will be immediately failed with
-   *          {@link CapacityReachedException} if the soft queue size limit is exceeded.
+   * @return a proxy future that completes with the future created by the input function. This
+   *     future will be immediately failed with {@link CapacityReachedException} if the soft queue
+   *     size limit is exceeded.
    * @throws NullPointerException if callable is null
    */
   @Override
@@ -107,6 +108,7 @@ public final class ConcurrencyLimiter<T> implements FutureJobInvoker<T> {
 
   /**
    * Return the number of callables that are queued up and haven't started yet.
+   *
    * @return the number of callables that are queued up and haven't started yet.
    */
   public int numQueued() {
@@ -115,6 +117,7 @@ public final class ConcurrencyLimiter<T> implements FutureJobInvoker<T> {
 
   /**
    * Return the number of currently active futures that have not yet completed.
+   *
    * @return the number of currently active futures that have not yet completed.
    */
   public int numActive() {
@@ -123,6 +126,7 @@ public final class ConcurrencyLimiter<T> implements FutureJobInvoker<T> {
 
   /**
    * Return the number of additional callables that can be queued before failing.
+   *
    * @return the number of additional callables that can be queued before failing.
    */
   public int remainingQueueCapacity() {
@@ -131,8 +135,9 @@ public final class ConcurrencyLimiter<T> implements FutureJobInvoker<T> {
 
   /**
    * Return the number of additional callables that can be run without queueing.
-    * @return the number of additional callables that can be run without queueing.
-    */
+   *
+   * @return the number of additional callables that can be run without queueing.
+   */
   public int remainingActiveCapacity() {
     return limit.availablePermits();
   }
@@ -140,9 +145,8 @@ public final class ConcurrencyLimiter<T> implements FutureJobInvoker<T> {
   /**
    * Return a {@code Job} with acquired permit, {@code null} otherwise.
    *
-   * <p>Does one of two things:
-   * 1) return a job and acquire a permit from the semaphore
-   * 2) return null and does not acquire a permit from the semaphore
+   * <p>Does one of two things: 1) return a job and acquire a permit from the semaphore 2) return
+   * null and does not acquire a permit from the semaphore
    */
   private Job<T> grabJob() {
     if (!limit.tryAcquire()) {
@@ -187,21 +191,24 @@ public final class ConcurrencyLimiter<T> implements FutureJobInvoker<T> {
       return;
     }
 
-    Futures.addCallback(future, new FutureCallback<T>() {
-      @Override
-      public void onSuccess(T result) {
-        limit.release();
-        response.set(result);
-        pump();
-      }
+    Futures.addCallback(
+        future,
+        new FutureCallback<T>() {
+          @Override
+          public void onSuccess(T result) {
+            limit.release();
+            response.set(result);
+            pump();
+          }
 
-      @Override
-      public void onFailure(Throwable t) {
-        limit.release();
-        response.setException(t);
-        pump();
-      }
-    }, executor);
+          @Override
+          public void onFailure(Throwable t) {
+            limit.release();
+            response.setException(t);
+            pump();
+          }
+        },
+        executor);
   }
 
   private static class Job<T> {

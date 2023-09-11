@@ -1,24 +1,27 @@
-/*
- * Copyright (c) 2013-2019 Spotify AB
+/*-
+ * -\-\-
+ * futures-extra
+ * --
+ * Copyright (C) 2016 - 2023 Spotify AB
+ * --
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * -/-/-
  */
 
 package com.spotify.futures;
 
 import com.google.api.core.ApiFuture;
 import com.google.common.util.concurrent.ListenableFuture;
-
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -40,20 +43,18 @@ public class CompletableFuturesExtra {
    * @param future The {@link CompletableFuture} to wrap in a {@link ListenableFuture}.
    * @return A {@link ListenableFuture} that completes when the original future completes.
    */
-  public static <V> ListenableFuture<V> toListenableFuture(
-      CompletableFuture<V> future) {
+  public static <V> ListenableFuture<V> toListenableFuture(CompletableFuture<V> future) {
     return toListenableFuture((CompletionStage<V>) future);
   }
 
   /**
-   * Wrap a {@link CompletionStage} in a {@link ListenableFuture}. The returned future will
-   * complete with the same result or failure as the original future.
+   * Wrap a {@link CompletionStage} in a {@link ListenableFuture}. The returned future will complete
+   * with the same result or failure as the original future.
    *
    * @param future The {@link CompletionStage} to wrap in a {@link ListenableFuture}.
    * @return A {@link ListenableFuture} that completes when the original future completes.
    */
-  public static <V> ListenableFuture<V> toListenableFuture(
-      CompletionStage<V> future) {
+  public static <V> ListenableFuture<V> toListenableFuture(CompletionStage<V> future) {
     if (future instanceof ListenableToCompletableFutureWrapper) {
       return ((ListenableToCompletableFutureWrapper<V>) future).unwrap();
     }
@@ -62,13 +63,12 @@ public class CompletableFuturesExtra {
 
   /**
    * Wrap a {@link ListenableFuture} in a {@link CompletableFuture}. The returned future will
-   * complete with the same result or failure as the original future. Completing the returned
-   * future does not complete the original future.
-   *
-   * @deprecated - see {@link ListenableFuturesExtra#toCompletableFuture(ListenableFuture)}
+   * complete with the same result or failure as the original future. Completing the returned future
+   * does not complete the original future.
    *
    * @param future The {@link ListenableFuture} to wrap in a {@link CompletableFuture}.
    * @return A {@link CompletableFuture} that completes when the original future completes.
+   * @deprecated - see {@link ListenableFuturesExtra#toCompletableFuture(ListenableFuture)}
    */
   @Deprecated
   public static <V> CompletableFuture<V> toCompletableFuture(ListenableFuture<V> future) {
@@ -78,10 +78,9 @@ public class CompletableFuturesExtra {
   /**
    * Converts an {@link ApiFuture} to a {@link CompletableFuture}.
    *
-   * @deprecated - see {@link ApiFuturesExtra#toCompletableFuture(ApiFuture)}
-   *
    * @param future the {@link ApiFuture} to wrap.
    * @return a {@link CompletableFuture} that completes when the original future completes.
+   * @deprecated - see {@link ApiFuturesExtra#toCompletableFuture(ApiFuture)}
    */
   @Deprecated
   public static <V> CompletableFuture<V> toCompletableFuture(ApiFuture<V> future) {
@@ -91,21 +90,20 @@ public class CompletableFuturesExtra {
   /**
    * Converts an {@link ApiFuture} to a {@link CompletableFuture}.
    *
-   * @deprecated - see {@link ApiFuturesExtra#toCompletableFuture(ApiFuture)}
-   *
    * @param future the {@link ApiFuture} to wrap.
    * @param executor the executor where the listener is running.
    * @return a {@link CompletableFuture} that completes when the original future completes.
+   * @deprecated - see {@link ApiFuturesExtra#toCompletableFuture(ApiFuture)}
    */
   @Deprecated
-  public static <V> CompletableFuture<V> toCompletableFuture(ApiFuture<V> future,
-                                                             Executor executor) {
+  public static <V> CompletableFuture<V> toCompletableFuture(
+      ApiFuture<V> future, Executor executor) {
     return ApiFuturesExtra.toCompletableFuture(future, executor);
   }
 
   /**
-   * Wrap a {@link CompletionStage} in a {@link ApiFuture}. The returned future will
-   * complete with the same result or failure as the original future.
+   * Wrap a {@link CompletionStage} in a {@link ApiFuture}. The returned future will complete with
+   * the same result or failure as the original future.
    *
    * @param future The {@link CompletionStage} to wrap in a {@link ApiFuture}.
    * @return A {@link ApiFuture} that completes when the original future completes.
@@ -118,8 +116,8 @@ public class CompletableFuturesExtra {
   }
 
   /**
-   * Returns a new CompletableFuture that is already exceptionally completed with
-   * the given exception.
+   * Returns a new CompletableFuture that is already exceptionally completed with the given
+   * exception.
    *
    * @param throwable the exception
    * @return the exceptionally completed CompletableFuture
@@ -131,58 +129,51 @@ public class CompletableFuturesExtra {
   }
 
   /**
-   * Returns a new stage that, when this stage completes
-   * either normally or exceptionally, is executed with this stage's
-   * result and exception as arguments to the supplied function.
+   * Returns a new stage that, when this stage completes either normally or exceptionally, is
+   * executed with this stage's result and exception as arguments to the supplied function.
    *
-   * <p>When this stage is complete, the given function is invoked
-   * with the result (or {@code null} if none) and the exception (or
-   * {@code null} if none) of this stage as arguments, and the
+   * <p>When this stage is complete, the given function is invoked with the result (or {@code null}
+   * if none) and the exception (or {@code null} if none) of this stage as arguments, and the
    * function's result is used to complete the returned stage.
    *
-   * <p>This differs from
-   * {@link java.util.concurrent.CompletionStage#handle(java.util.function.BiFunction)}
-   * in that the function should return a {@link java.util.concurrent.CompletionStage} rather than
-   * the value directly.
+   * <p>This differs from {@link
+   * java.util.concurrent.CompletionStage#handle(java.util.function.BiFunction)} in that the
+   * function should return a {@link java.util.concurrent.CompletionStage} rather than the value
+   * directly.
    *
    * @param stage the {@link CompletionStage} to compose
-   * @param fn the function to use to compute the value of the
-   *        returned {@link CompletionStage}
+   * @param fn the function to use to compute the value of the returned {@link CompletionStage}
    * @param <U> the function's return type
    * @return the new {@link CompletionStage}
    */
   public static <T, U> CompletionStage<U> handleCompose(
-          CompletionStage<T> stage,
-          BiFunction<? super T, Throwable, ? extends CompletionStage<U>> fn) {
+      CompletionStage<T> stage, BiFunction<? super T, Throwable, ? extends CompletionStage<U>> fn) {
     return dereference(stage.handle(fn));
   }
 
   /**
-   * Returns a new stage that, when this stage completes
-   * exceptionally, is executed with this stage's exception as the
-   * argument to the supplied function.  Otherwise, if this stage
-   * completes normally, then the returned stage also completes
-   * normally with the same value.
+   * Returns a new stage that, when this stage completes exceptionally, is executed with this
+   * stage's exception as the argument to the supplied function. Otherwise, if this stage completes
+   * normally, then the returned stage also completes normally with the same value.
    *
-   * <p>This differs from
-   * {@link java.util.concurrent.CompletionStage#exceptionally(java.util.function.Function)}
-   * in that the function should return a {@link java.util.concurrent.CompletionStage} rather than
-   * the value directly.
+   * <p>This differs from {@link
+   * java.util.concurrent.CompletionStage#exceptionally(java.util.function.Function)} in that the
+   * function should return a {@link java.util.concurrent.CompletionStage} rather than the value
+   * directly.
    *
    * @param stage the {@link CompletionStage} to compose
-   * @param fn the function to use to compute the value of the
-   *        returned {@link CompletionStage} if this stage completed
-   *        exceptionally
+   * @param fn the function to use to compute the value of the returned {@link CompletionStage} if
+   *     this stage completed exceptionally
    * @return the new {@link CompletionStage}
    */
   public static <T> CompletionStage<T> exceptionallyCompose(
-          CompletionStage<T> stage,
-          Function<Throwable, ? extends CompletionStage<T>> fn) {
+      CompletionStage<T> stage, Function<Throwable, ? extends CompletionStage<T>> fn) {
     return dereference(wrap(stage).exceptionally(fn));
   }
 
   /**
    * check that a stage is completed.
+   *
    * @param stage a {@link CompletionStage}.
    * @throws IllegalStateException if the stage is not completed.
    */
@@ -228,8 +219,7 @@ public class CompletableFuturesExtra {
   }
 
   /**
-   * This takes a stage of a stage of a value and
-   * returns a plain stage of a value.
+   * This takes a stage of a stage of a value and returns a plain stage of a value.
    *
    * @param stage a {@link CompletionStage} of a {@link CompletionStage} of a value
    * @return the {@link CompletionStage} of the value
