@@ -7,10 +7,6 @@
 
   <name>futures-extra</name>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
-
   <parent>
     <groupId>com.spotify</groupId>
     <artifactId>foss-root</artifactId>
@@ -62,6 +58,13 @@
       <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
     </repository>
   </distributionManagement>
+
+  <properties>
+    <java.version>1.8</java.version>
+    <maven.compiler.release>${java.version}</maven.compiler.release>
+    <maven.compiler.source>${java.version}</maven.compiler.source>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
+  </properties>
 
   <dependencyManagement>
     <dependencies>
@@ -183,10 +186,6 @@
       <activation>
         <jdk>1.8</jdk>
       </activation>
-      <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-      </properties>
       <build>
         <plugins>
           <plugin>
@@ -206,9 +205,6 @@
       <activation>
         <jdk>[9,)</jdk>
       </activation>
-      <properties>
-        <maven.compiler.release>11</maven.compiler.release>
-      </properties>
       <build>
         <plugins>
           <plugin>
