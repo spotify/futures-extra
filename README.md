@@ -5,12 +5,13 @@ Guava's ListenableFuture class
 
 ### Build status
 
-[![Travis](https://api.travis-ci.org/spotify/futures-extra.svg?branch=master)](https://travis-ci.org/spotify/futures-extra)
+[![Build Status](https://github.com/spotify/futures-extra/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/spotify/futures-extra/actions/workflows/ci.yml?query=branch%3Amaster)
 [![Coverage Status](http://img.shields.io/coveralls/spotify/futures-extra/master.svg)](https://coveralls.io/r/spotify/futures-extra?branch=master)
 
 ### Maven central
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.spotify/futures-extra/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.spotify/futures-extra)
+
 
 ### Build dependencies
 * Java 8 or higher
