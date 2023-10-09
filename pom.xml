@@ -171,6 +171,31 @@
           </dependency>
         </dependencies>
       </plugin>
+      <plugin>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce-bytecode-version</id>
+            <configuration>
+              <rules>
+                <enforceBytecodeVersion>
+                  <maxJdkVersion>8</maxJdkVersion>
+                </enforceBytecodeVersion>
+              </rules>
+            </configuration>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>extra-enforcer-rules</artifactId>
+            <version>1.7.0</version>
+          </dependency>
+        </dependencies>
+      </plugin>
     </plugins>
   </build>
 </project>
