@@ -10,7 +10,7 @@
   <parent>
     <groupId>com.spotify</groupId>
     <artifactId>foss-root</artifactId>
-    <version>16</version>
+    <version>17</version>
   </parent>
 
   <scm>
@@ -19,15 +19,6 @@
     <url>scm:https://github.com/spotify/futures-extra/</url>
     <tag>HEAD</tag>
   </scm>
-
-  <licenses>
-    <license>
-      <name>The Apache Software License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-      <distribution>repo</distribution>
-      <comments>A business-friendly OSS license</comments>
-    </license>
-  </licenses>
 
   <organization>
     <name>Spotify AB</name>
@@ -47,17 +38,6 @@
       <timezone>+1</timezone>
     </developer>
   </developers>
-
-  <distributionManagement>
-    <snapshotRepository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </snapshotRepository>
-    <repository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-    </repository>
-  </distributionManagement>
 
   <dependencyManagement>
     <dependencies>
@@ -124,22 +104,6 @@
         <configuration>
           <useModulePath>false</useModulePath>
         </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <configuration>
-          <show>private</show>
-          <failOnError>false</failOnError>
-        </configuration>
-        <executions>
-          <execution>
-            <id>attach-javadocs</id>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
